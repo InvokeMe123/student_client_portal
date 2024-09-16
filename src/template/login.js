@@ -27,10 +27,7 @@ const LoginForm = () => {
           <label>Password</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        <div className="form-group">
-          <label>random</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
+      
         <button type="submit" className="login-button">Login</button>
         <button type="button" className="create-account-button" onClick={navigateToRegister}>Create Account</button>
       </form>
