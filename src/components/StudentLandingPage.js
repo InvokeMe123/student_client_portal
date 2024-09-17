@@ -23,12 +23,12 @@ const styles = {
   container: {
     display: 'flex',
     height: '100vh',
-    backgroundColor: '#f4f4f9',
+    backgroundColor: '#f4f4f9', // Overall background
   },
   sidebar: {
-    width: '200px',
+    width: '255px',
     height: '100vh',
-    backgroundColor: '#9eedf0', // Light green background
+    backgroundColor: '#75faf8', // Light green background
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -43,21 +43,32 @@ const styles = {
     marginBottom: '40px',
     fontSize: '16px',
     textAlign: 'center',
-    fontWeight: 'bold',
   },
   menuItem: {
-    backgroundColor: '#9eedf0', // Richer green shade for the buttons
+    backgroundColor: '#75faf8', // Richer green shade for the buttons
     color: 'black',
-    padding: '30px 10px', // Increased padding for a square look
-    margin: '10px 0',
-    width: '90%', // Adjusted to make buttons wider
+    padding: '45px 0', // Padding adjusted for square look
+    margin: '20px 0', // More space between buttons
+    width: '90%', // Width to make buttons fill the sidebar more
     textAlign: 'center',
     textDecoration: 'none',
     borderRadius: '5px',
     fontSize: '16px',
     display: 'block',
-    boxShadow: '8px 8px 8px rgba(0.1,0.1,0.1,0.1)', // Shadow for elevation
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)', // Shadow on all sides
     transition: 'transform 0.3s ease, box-shadow 0.3s ease', // Smooth transition for hover effect
+    cursor: 'pointer', // Change cursor on hover to indicate interactivity
+    ':hover': {
+      transform: 'translateY(-2px)', // Slight lift
+      boxShadow: '0 6px 12px rgba(0,0,0,0.25), 0 -6px 12px rgba(0,0,0,0.15), -6px 0 12px rgba(0,0,0,0.15), 6px 0 12px rgba(0,0,0,0.15)' // Deeper shadow on hover on all sides
+    }
+  },
+  
+  
+  content: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: '20px',
   },
 };
 
