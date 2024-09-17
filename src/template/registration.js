@@ -40,7 +40,6 @@ const RegistrationForm = () => {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
-
       // Save user information and role to Firestore
       await addDoc(collection(firestore, "users"), {
         uid: user.uid,
