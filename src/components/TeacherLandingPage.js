@@ -5,6 +5,7 @@ import { collection, getDocs,query ,setDoc,where} from 'firebase/firestore'; // 
 import { getDoc, doc, updateDoc } from 'firebase/firestore'; // Firestore functions to fetch teacher data
 import { firestore,storage } from '../firebase_setup/firebase'; // Your Firestore setup
 import { getAuth,onAuthStateChanged  } from 'firebase/auth'; // Import Firebase Auth to get current user
+import GroupCard from '../utils/groupCard';
 
 // Teacher Landing Page Component
 const TeacherLandingPage = () => {
@@ -21,6 +22,14 @@ const TeacherLandingPage = () => {
 
 // Fetch data from Firestore
   // Function to fetch teacher data from Firestore
+
+  const groupInfo = {
+    groupName: 'AI Research Group',
+    projectTitle: 'Exploring Neural Networks',
+    studentEmails: ['student1@example.com', 'student2@example.com'],
+    description: 'This project involves deep exploration into the workings of neural networks and their applications.',
+    fileUrl: 'https://example.com/path/to/document.pdf' // Example URL, replace with actual URL to the document
+  };
   const fetchTeacherData = async (currentUser) => {
     try {
       // Query the 'users' collection for the current user with the role 'teacher'
@@ -187,6 +196,19 @@ if (loading) {
         >
           Create Group
         </Link>
+        <div style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f4f9' }}>
+        <div style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f4f9' }}>
+      <GroupCard
+        groupName={groupInfo.groupName}
+        projectTitle={groupInfo.projectTitle}
+        studentEmails={groupInfo.studentEmails}
+        description={groupInfo.description}
+        fileUrl={groupInfo.fileUrl}
+      />
+    </div>
+    </div>
+
+
 
         {/* Display "General" Details if clicked */}
         {isGeneralClicked && (
