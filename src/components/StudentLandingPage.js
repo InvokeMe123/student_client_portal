@@ -1,28 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { Link } from 'react-router-dom';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage methods
+import { collection, getDocs,query ,where} from 'firebase/firestore'; // Firestore functions
+import { updateDoc,doc } from 'firebase/firestore'; // Firestore functions to fetch teacher data
+import { firestore,storage } from '../firebase_setup/firebase'; // Your Firestore setup
+import { getAuth,onAuthStateChanged,signOut } from 'firebase/auth'; // Import Firebase Auth to get current user
+import { useHistory } from 'react-router-dom';
 
-const ProfileComponent = () => (
-  <div style={styles.fullContent}>
-    <div style={styles.profileHeader}>
-      <img src="path_to_profile_image.jpg" alt="Profile" style={styles.profileImage} />
-      <div>
-        <h3>Mr Harmanjot Singh</h3>
-        <p>SAE9914</p>
+const ProfileComponent = ({ studentData, profileImage, setProfileImage }) => {
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const storageRef = ref(storage, `profile_images/${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Update Firestore document with new profile image URL
+      const userDocRef = doc(firestore, 'users', studentData.uid);
+      await updateDoc(userDocRef, { profileImage: downloadURL });
+
+      setProfileImage(downloadURL);
+      console.log("Image uploaded and profile updated with URL:", downloadURL);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  return (
+    <div style={styles.fullContent}>
+      <div style={styles.profileHeader}>
+        <img src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} alt="Profile" style={styles.profileImage} />
+        <div>
+          <h3>{studentData.name}</h3>
+          
+        </div>
+      </div>
+      <div style={styles.profileDetails}>
+        <div style={styles.profileSection}>
+          <h4>General Info</h4>
+          
+          <p><strong>Email:</strong> {studentData.email}</p>
+          <p><strong>Contact:</strong> {studentData.phone}</p>
+          <p><strong>Age:</strong> {studentData.age || 'N/A'}</p>
+          <p><strong>Faculty:</strong> {studentData.extraField || 'N/A'}</p>
+        
+        </div>
+        <h4>Upload Profile Photo</h4>
+        <input type="file" onChange={handleImageUpload} />
+        
       </div>
     </div>
-    <div style={styles.profileDetails}>
-      <div style={styles.profileSection}>
-        <h4>General Info</h4>
-        <p><strong>Student No:</strong> SAE9914</p>
-        <p><strong>Email:</strong> Harmanjot5402@gmail.com</p>
-        <p><strong>Contact:</strong> +61 0468422007</p>
-        <p><strong>City of Birth:</strong> SUBAKHERA, HARYANA</p>
-        <p><strong>Nationality:</strong> Indian</p>
-        <p><strong>Passport Expiry:</strong> 14-09-2031</p>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
+
 
 // Additional components unchanged, can add similar detail level as needed
 const CoursesComponent = () => (
@@ -57,7 +89,63 @@ const AnnouncementsWidget = () => (
 );
 
 const StudentLandingPage = () => {
-  const [activeSection, setActiveSection] = useState('announcements');  // Default section
+  const [activeSection, setActiveSection] = useState('announcements');
+  const [profileImage, setProfileImage] = useState(null);
+  const [studentData, setStudentData] = useState({}); // Changed from array to object
+  const [loading, setLoading] = useState(true);
+  const history = useHistory();
+  
+  const fetchStudentData = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      console.log('No user is currently logged in');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const userQuery = query(
+        collection(firestore, 'users'),
+        where('uid', '==', currentUser.uid),
+        where('role', '==', 'student')
+      );
+      const querySnapshot = await getDocs(userQuery);
+
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        setStudentData(userData);
+        setProfileImage(userData.profileImage || null);
+      } else {
+        console.log('No matching user document found.');
+      }
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentData();
+  }, []);
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      console.log("User logged out successfully!");
+      history.push('/login');
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Failed to log out!");
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -70,7 +158,7 @@ const StudentLandingPage = () => {
         <div style={styles.menuItem} onClick={() => setActiveSection('support')}>Support</div>
       </div>
       <div style={styles.content}>
-        {activeSection === 'profile' && <ProfileComponent />}
+      {activeSection === 'profile' && <ProfileComponent studentData={studentData} profileImage={profileImage} setProfileImage={setProfileImage} />}
         {activeSection === 'courses' && <CoursesComponent />}
         {activeSection === 'messages' && <MessagesComponent />}
         {activeSection === 'support' && <SupportComponent />}

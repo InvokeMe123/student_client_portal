@@ -1,10 +1,11 @@
 import React, { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage methods
-import { collection, getDocs,query ,setDoc,where} from 'firebase/firestore'; // Firestore functions
-import { getDoc, doc, updateDoc } from 'firebase/firestore'; // Firestore functions to fetch teacher data
+import { collection, getDocs,query ,where} from 'firebase/firestore'; // Firestore functions
+import { updateDoc } from 'firebase/firestore'; // Firestore functions to fetch teacher data
 import { firestore,storage } from '../firebase_setup/firebase'; // Your Firestore setup
-import { getAuth,onAuthStateChanged  } from 'firebase/auth'; // Import Firebase Auth to get current user
+import { getAuth,onAuthStateChanged,signOut } from 'firebase/auth'; // Import Firebase Auth to get current user
+import { useHistory } from 'react-router-dom';
 
 // Teacher Landing Page Component
 const TeacherLandingPage = () => {
@@ -49,6 +50,20 @@ const TeacherLandingPage = () => {
       console.error('Error fetching teacher data:', error);
     } finally {
       setLoading(false); // Stop loading once data is fetched
+    }
+  };
+  const history = useHistory();
+  const handleLogout = async () => {
+    const auth = getAuth();
+  
+    try {
+      await signOut(auth);
+      console.log("User logged out successfully!");
+      history.push('/login');
+    
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Failed to log out!");
     }
   };
 
@@ -148,7 +163,7 @@ if (loading) {
       <div style={styles.sidebar}>
         {/* Profile Photo Centered */}
         <img
-          src={profileImage || '/path/to/profile/photo.jpg'} // Replace with actual image source
+          src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} // Replace with actual image source
           alt="Teacher Profile"
           style={styles.profilePhotoCentered}
         />
@@ -215,9 +230,13 @@ if (loading) {
             <h4>Upload Profile Photo</h4>
             <input type="file" onChange={handleImageUpload} />
         {uploading && <p>Uploading...</p>} {/* Show uploading progress */}
-        {profileImage && <img src={profileImage} alt="Profile" width="150px" />}
+        
+       
           </div>
+          
         )}
+         <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
+        
 
         {/* Display "Messages" section if clicked */}
         {isMessagesClicked && (
