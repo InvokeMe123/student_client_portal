@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-// Define content widgets
 const ProfileComponent = () => (
   <div style={styles.fullContent}>
-    <h3>My Profile</h3>
-    <p>Details about your profile will appear here.</p>
+    <div style={styles.profileHeader}>
+      <img src="path_to_profile_image.jpg" alt="Profile" style={styles.profileImage} />
+      <div>
+        <h3>Mr Harmanjot Singh</h3>
+        <p>SAE9914</p>
+      </div>
+    </div>
+    <div style={styles.profileDetails}>
+      <div style={styles.profileSection}>
+        <h4>General Info</h4>
+        <p><strong>Student No:</strong> SAE9914</p>
+        <p><strong>Email:</strong> Harmanjot5402@gmail.com</p>
+        <p><strong>Contact:</strong> +61 0468422007</p>
+        <p><strong>City of Birth:</strong> SUBAKHERA, HARYANA</p>
+        <p><strong>Nationality:</strong> Indian</p>
+        <p><strong>Passport Expiry:</strong> 14-09-2031</p>
+      </div>
+    </div>
   </div>
 );
 
+// Additional components unchanged, can add similar detail level as needed
 const CoursesComponent = () => (
   <div style={styles.fullContent}>
     <h3>My Courses</h3>
@@ -64,7 +80,6 @@ const StudentLandingPage = () => {
   );
 };
 
-// Define CSS styles
 const styles = {
   container: {
     display: 'flex',
@@ -123,6 +138,24 @@ const styles = {
     margin: '10px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
+  profileHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
+  profileImage: {
+    marginRight: '20px',
+    width: '150px',
+    height: '150px',
+    borderRadius: '50%',
+  },
+  profileDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  profileSection: {
+    marginBottom: '10px',
+  }
 };
 
 export default StudentLandingPage;
