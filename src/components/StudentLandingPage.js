@@ -159,7 +159,7 @@ const StudentLandingPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.sidebar}>
-        <div style={styles.logo} onClick={() => setActiveSection('announcements')}>LOGO</div>
+        <div style={styles.logo} onClick={() => setActiveSection('announcements')}>HOME</div>
         <div style={styles.portalName}>Student Portal</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('profile')}>My Profile</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('courses')}>My Courses</div>
@@ -186,33 +186,35 @@ const styles = {
   sidebar: {
     width: '255px',
     height: '100vh',
-    backgroundColor: '#75faf8',
+    backgroundColor: '#902bf5',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px',
   },
   logo: {
+    color: 'white',
     marginBottom: '20px',
     fontSize: '24px',
     fontWeight: 'bold',
     cursor: 'pointer',
   },
   portalName: {
+    color: 'white',
     marginBottom: '40px',
     fontSize: '16px',
     textAlign: 'center',
   },
   menuItem: {
-    backgroundColor: '#75faf8',
-    color: 'black',
-    padding: '45px 0',
-    margin: '20px 0',
+    backgroundColor: '#902bf5',
+    color: 'white',
+    padding: '20px 0',
+    margin: '20px 0px',
     width: '90%',
     textAlign: 'center',
     textDecoration: 'none',
-    borderRadius: '5px',
-    fontSize: '16px',
+    borderRadius: '6px',
+    fontSize: '18px',
     display: 'block',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',

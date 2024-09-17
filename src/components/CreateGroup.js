@@ -11,9 +11,11 @@ const CreateGroup = () => {
   const [groupname, setGroupname] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
   const [description, setDescription] = useState('');
+
   const [teacher, setTeacher] = useState('');  
   const [fileDownloadUrl, setFileDownloadLink] = useState('');
   const [file, setFile] = useState('');
+
 
   {/* students section*/}
   const [listOfStudents, setListOfStudents] = useState([]);  // For storing selected student emails
@@ -29,6 +31,7 @@ const CreateGroup = () => {
   const [searchClientQuery, setSearchClientQuery] = useState(''); // for searching client
   const [dropdownClientOpen, setDropdownClientOpen] = useState(false);
   const [filteredClients, setFilteredClients] = useState([]);  
+
 
   const history = useHistory(); 
   const auth = getAuth();
@@ -99,6 +102,7 @@ const CreateGroup = () => {
   useEffect(() => {
     const filtered = students.filter((student) => {
       return student.name.toLowerCase().includes(searchQuery.toLowerCase());
+
     });
     setFilteredStudents(filtered);
   }, [searchQuery, students]);
@@ -302,6 +306,10 @@ useEffect(() => {
 
         {/* File input */}
         {renderFileInput('File:', file, handleFileChange, handleDeleteFile)}
+
+       
+
+
 
         <div style={styles.buttonGroup}>
           <button type="button" onClick={handleBack} style={styles.backButton}>Back</button>
