@@ -1,7 +1,10 @@
 import React, { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, where } from 'firebase/firestore'; // Firestore functions
-import { firestore } from '../firebase_setup/firebase'; // Your Firestore setup
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage methods
+import { collection, getDocs,query ,setDoc,where} from 'firebase/firestore'; // Firestore functions
+import { getDoc, doc, updateDoc } from 'firebase/firestore'; // Firestore functions to fetch teacher data
+import { firestore,storage } from '../firebase_setup/firebase'; // Your Firestore setup
+import { getAuth,onAuthStateChanged  } from 'firebase/auth'; // Import Firebase Auth to get current user
 
 // Teacher Landing Page Component
 const TeacherLandingPage = () => {
@@ -11,36 +14,116 @@ const TeacherLandingPage = () => {
   const [currentTab, setCurrentTab] = useState('chat'); // State to track current tab (chat or group)
   const [profileImage, setProfileImage] = useState(null); // State for profile image
   const [teacherData, setTeacherData] = useState([]); // State for storing teacher data from Firestore
+  const [uploading, setUploading] = useState(false); // To show upload progress
+  const [loading, setLoading] = useState(true); // Loading state to track when data is being fetched
 
 
 
 // Fetch data from Firestore
-const fetchTeacherData = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(firestore, 'users')); // Fetching all documents in "teachers" collection
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setTeacherData(data); // Set fetched data to state
-  } catch (error) {
-    console.error("Error fetching teacher data: ", error);
-  }
-};
+  // Function to fetch teacher data from Firestore
+  const fetchTeacherData = async (currentUser) => {
+    try {
+      // Query the 'users' collection for the current user with the role 'teacher'
+      const userQuery = query(
+        collection(firestore, 'users'),
+        where('uid', '==', currentUser.uid),
+        where('role', '==', 'teacher')
+      );
+        console.log(query.toString)
+      const querySnapshot = await getDocs(userQuery);
+      
+
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data(); // Get user data
+        setTeacherData([userData]); // Set the teacher data in state
+
+        if (userData.profileImage) {
+          setProfileImage(userData.profileImage); // Set the profile image in state
+        } else {
+          console.log('No profile image found');
+        }
+      } else {
+        console.log('No matching user document found for the current teacher.');
+      }
+    } catch (error) {
+      console.error('Error fetching teacher data:', error);
+    } finally {
+      setLoading(false); // Stop loading once data is fetched
+    }
+  };
 
 // UseEffect to fetch data on component mount
 useEffect(() => {
-  fetchTeacherData();
+  const auth = getAuth(); // Initialize Firebase Auth
+
+  // Wait for Firebase Auth to confirm user authentication state
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is logged in, fetch the teacher data from Firestore
+      fetchTeacherData(user);
+    } else {
+      console.log('No user is currently logged in');
+      setLoading(false); // Stop loading if no user is logged in
+    }
+  });
+
+  // Cleanup the subscription to avoid memory leaks
+  return () => unsubscribe();
 }, []);
 
+if (loading) {
+  return <p>Loading...</p>; // Show a loading message while data is being fetched
+}
 
+ // Handler for image upload
+ const handleImageUpload = async (event) => {
+  const file = event.target.files[0]; // Get the file from the input
+  if (file) {
+    const auth = getAuth(); // Initialize Firebase Auth
+    const currentUser = auth.currentUser; // Get the current authenticated user
 
-
-  // Handler for image upload
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file); // Create a local URL for the image
-      setProfileImage(imageUrl); // Set the uploaded image
+    if (!currentUser) {
+      console.log('No user is currently logged in');
+      return;
     }
-  };
+
+    try {
+      // Upload the file to Firebase Storage
+      const storageRef = ref(storage, `profile_images/${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log("Image uploaded to Firebase Storage. Download URL:", downloadURL);
+
+      // Query the 'users' collection for the current user with the role 'teacher'
+      const userQuery = query(
+        collection(firestore, 'users'),
+        where('uid', '==', currentUser.uid),
+        where('role', '==', 'teacher') // Ensure we're targeting only teachers
+      );
+
+      const querySnapshot = await getDocs(userQuery);
+
+      if (!querySnapshot.empty) {
+        // Assuming there's only one matching document for this user
+        const userDocRef = querySnapshot.docs[0].ref; // Get the document reference
+
+        console.log("User document found:", querySnapshot.docs[0].data());
+
+        // Update the Firestore document with the profileImage field
+        await updateDoc(userDocRef, { profileImage: downloadURL });
+
+        // Optionally set the profile image in the state to display it immediately
+        setProfileImage(downloadURL);
+
+        console.log('Profile image updated successfully in Firestore!');
+      } else {
+        console.log('No matching user document found for the current teacher.');
+      }
+    } catch (error) {
+      console.error('Error uploading and updating profile image:', error);
+    }
+  }
+};
 
   // Toggle "General" section display
   const handleGeneralClick = () => {
@@ -113,20 +196,26 @@ useEffect(() => {
 
             <h3>General Information</h3>
             <ul style={styles.generalList}>
-              {teacherData.map(teacher => (
-                <li key={teacher.id}>
-                  <strong>Name:</strong> {teacher.name}<br />
-                  <strong>Age:</strong> {teacher.age??'N/A'}<br />
-                  <strong>Email:</strong> {teacher.email}<br />
-                  <strong>Department:</strong> {teacher.extraField??'N/A'}<br />
-                  <strong>Contact:</strong> {teacher.contact??'N/A'}<br />
-                </li>
-              ))}
+            {teacherData && teacherData.length > 0 ? (
+    teacherData.map((teacher, index) => (
+    <li key={teacher.uid || index}> {/* Using teacher.uid or index as fallback for key */}
+      <strong>Name:</strong> {teacher.name || 'N/A'}<br />
+      <strong>Age:</strong> {teacher.age ?? 'N/A'}<br />
+      <strong>Email:</strong> {teacher.email || 'N/A'}<br />
+      <strong>Department:</strong> {teacher.extraField || 'N/A'}<br />
+      <strong>Contact:</strong> {teacher.contact || 'N/A'}<br />
+    </li>
+  ))
+) : (
+  <p>No teacher data available</p> // Show message if no data is available
+)}
             </ul>
 
             {/* Profile Photo Upload in the General Section */}
             <h4>Upload Profile Photo</h4>
             <input type="file" onChange={handleImageUpload} />
+        {uploading && <p>Uploading...</p>} {/* Show uploading progress */}
+        {profileImage && <img src={profileImage} alt="Profile" width="150px" />}
           </div>
         )}
 
