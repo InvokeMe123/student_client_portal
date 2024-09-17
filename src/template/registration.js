@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; // Firebase Auth for email/password
-import { addDoc, collection } from "@firebase/firestore"; // Firestore for saving additional user data
+import { doc, setDoc } from "firebase/firestore";  // Import setDoc and doc
+
 import { firestore } from '../firebase_setup/firebase'; // Your Firebase setup
 
 const RegistrationForm = () => {
@@ -40,8 +41,10 @@ const RegistrationForm = () => {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
+      const userDocRef = doc(firestore, "users", user.uid);
+
       // Save user information and role to Firestore
-      await addDoc(collection(firestore, "users"), {
+      await setDoc(userDocRef, {
         uid: user.uid,
         name: formData.name,
         age:formData.age,
@@ -106,11 +109,11 @@ const RegistrationForm = () => {
         </div>
         <div className="input-group">
           <label>Age</label>
-          <input type="text" name="name" value={formData.age} onChange={handleChange} required />
+          <input type="number" name="age" value={formData.age} onChange={handleChange} required />
         </div>
         <div className="input-group">
           <label>Phone</label>
-          <input type="text" name="name" value={formData.phone} onChange={handleChange} required />
+          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
         </div>
         <div className="input-group">
           <label>Email</label>
