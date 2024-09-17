@@ -263,18 +263,19 @@ const styles = {
   portalName: {
     color: 'white',
     marginBottom: '40px',
-    fontSize: '18px',
+    fontSize: '16px',
     textAlign: 'center',
   },
   menuItem: {
     backgroundColor: '#902bf5',
     color: 'white',
     padding: '25px 0',
-    margin: '25px 0',
+    margin: '20px 0',
     width: '90%',
-    borderRadius: '6px',
+    borderRadius: '8px',
     textAlign: 'center',
-    textDecoration: 'none',  
+    textDecoration: 'none',
+    
     fontSize: '18px',
     display: 'block',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)',
