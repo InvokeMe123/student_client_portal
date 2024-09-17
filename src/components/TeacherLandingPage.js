@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { collection, getDocs, where } from 'firebase/firestore'; // Firestore functions
+import { firestore } from '../firebase_setup/firebase'; // Your Firestore setup
 
 // Teacher Landing Page Component
 const TeacherLandingPage = () => {
@@ -8,6 +10,28 @@ const TeacherLandingPage = () => {
   const [isMessagesClicked, setIsMessagesClicked] = useState(false); // State to manage if "Messages" is clicked
   const [currentTab, setCurrentTab] = useState('chat'); // State to track current tab (chat or group)
   const [profileImage, setProfileImage] = useState(null); // State for profile image
+  const [teacherData, setTeacherData] = useState([]); // State for storing teacher data from Firestore
+
+
+
+// Fetch data from Firestore
+const fetchTeacherData = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(firestore, 'users')); // Fetching all documents in "teachers" collection
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setTeacherData(data); // Set fetched data to state
+  } catch (error) {
+    console.error("Error fetching teacher data: ", error);
+  }
+};
+
+// UseEffect to fetch data on component mount
+useEffect(() => {
+  fetchTeacherData();
+}, []);
+
+
+
 
   // Handler for image upload
   const handleImageUpload = (event) => {
@@ -47,7 +71,7 @@ const TeacherLandingPage = () => {
         />
 
         {/* Teacher Name */}
-        <h2 style={styles.teacherName}>John Doe</h2>
+        <h2 style={styles.teacherName}>{teacherData.map(teacher=>teacher.name)}</h2>
 
         {/* General Information Section */}
         <div
@@ -89,13 +113,15 @@ const TeacherLandingPage = () => {
 
             <h3>General Information</h3>
             <ul style={styles.generalList}>
-              <li>Age: 35</li>
-              <li>DOB: 15-03-1988</li>
-              <li>Nationality: Australian</li>
-              <li>Gender: Male</li>
-              <li>Contact: +61 123 456 789</li>
-              <li>Email: johndoe@example.com</li>
-              <li>Department: Mathematics</li>
+              {teacherData.map(teacher => (
+                <li key={teacher.id}>
+                  <strong>Name:</strong> {teacher.name}<br />
+                  <strong>Age:</strong> {teacher.age??'N/A'}<br />
+                  <strong>Email:</strong> {teacher.email}<br />
+                  <strong>Department:</strong> {teacher.extraField??'N/A'}<br />
+                  <strong>Contact:</strong> {teacher.contact??'N/A'}<br />
+                </li>
+              ))}
             </ul>
 
             {/* Profile Photo Upload in the General Section */}
@@ -155,6 +181,7 @@ const TeacherLandingPage = () => {
     </div>
   );
 };
+
 
 // CSS Styles as JS objects
 const styles = {
