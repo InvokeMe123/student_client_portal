@@ -21,19 +21,61 @@ const TeacherLandingPage = () => {
   const [teacherData, setTeacherData] = useState([]); // State for storing teacher data from Firestore
   const [uploading, setUploading] = useState(false); // To show upload progress
   const [loading, setLoading] = useState(true); // Loading state to track when data is being fetched
-
-
-
-// Fetch data from Firestore
-  // Function to fetch teacher data from Firestore
-
-  const groupInfo = {
-    groupName: 'AI Research Group',
-    projectTitle: 'Exploring Neural Networks',
-    studentEmails: ['student1@example.com', 'student2@example.com'],
-    description: 'This project involves deep exploration into the workings of neural networks and their applications.',
-    fileUrl: 'https://example.com/path/to/document.pdf' // Example URL, replace with actual URL to the document
+  const [groups, setGroups] = useState([]);
+  const [currentUserData, setCurrentUserData] = useState([]);
+ 
+  
+  
+  
+  const fetchCurrentUser = async () => {
+    const auth = getAuth();
+    const uid = auth.currentUser.uid;
+    
+    try {
+      const userQuery = query(
+        collection(firestore, 'users'),
+        where('uid', '==', uid),
+        
+      );
+      const querySnapshot = await getDocs(userQuery);
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        setCurrentUserData(userData);
+        
+      } else {
+        console.log('No matching user document found.');
+      } 
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      setLoading(false);
+    }
   };
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        // Assuming "groups" is your collection name in Firestore
+        const groupsRef = collection(firestore, 'groups');
+        const groupsSnapshot = await getDocs(groupsRef);
+
+        const groupsList = groupsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        console.log('The group list',groupsList);
+
+        setGroups(groupsList);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  
   const fetchTeacherData = async (currentUser) => {
     try {
       // Query the 'users' collection for the current user with the role 'teacher'
@@ -88,6 +130,7 @@ useEffect(() => {
     if (user) {
       // User is logged in, fetch the teacher data from Firestore
       fetchTeacherData(user);
+      fetchCurrentUser(user);
     } else {
       console.log('No user is currently logged in');
       setLoading(false); // Stop loading if no user is logged in
@@ -151,6 +194,13 @@ if (loading) {
     }
   }
 };
+
+  
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
 
   // Toggle "General" section display
   const handleGeneralClick = () => {
@@ -216,13 +266,41 @@ if (loading) {
         </Link>
         <div style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f4f9' }}>
         <div style={{ padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f4f9' }}>
-      <GroupCard
-        groupName={groupInfo.groupName}
-        projectTitle={groupInfo.projectTitle}
-        studentEmails={groupInfo.studentEmails}
-        description={groupInfo.description}
-        fileUrl={groupInfo.fileUrl}
-      />
+        <div>
+          <div style={styles.mainContent}>
+        <div style={styles.gridContainer}>
+
+      {groups.map((groupInfo,index) => {
+        // Check if current user is either the teacher or in the studentEmails list
+        console.log("Teacher name",groupInfo.teacher);
+        console.log("Current username",currentUserData?.name );
+        
+
+        const isInGroup =
+      groupInfo.teacher?.trim().toLowerCase() === currentUserData?.name?.trim().toLowerCase() ||
+      groupInfo.listOfStudents?.some(email => email.trim().toLowerCase() === currentUserData?.email?.trim().toLowerCase()) ||
+      groupInfo.client?.trim().toLowerCase() === currentUserData?.email?.trim().toLowerCase();
+
+          console.log("is the user in the group", isInGroup);
+          console.log('this is the key',groupInfo.id);
+
+        return (
+          isInGroup && (
+            <GroupCard
+              key={groupInfo.id||index}
+              groupName={groupInfo.groupName}
+              projectTitle={groupInfo.projectTitle}
+              studentEmails={groupInfo.listOfStudents}
+              description={groupInfo.description}
+              fileUrl={groupInfo.fileDownloadUrl}
+              client={groupInfo.client}
+            />
+          )
+        );
+      })}
+      </div>
+      </div>
+    </div>
     </div>
     </div>
 
@@ -346,6 +424,16 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: '20px',
     textAlign: 'center', // Center the name
+  },
+  gridContainer: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', // Adjust the card width and grid layout
+    gridGap: '20px',  // Add some spacing between cards
+    padding: '20px',
+  },
+  groupCard: {
+    flex: '1 0 300px',  // Ensures that each card takes up a minimum width of 300px
+    boxSizing: 'border-box',
   },
   generalSection: {
     cursor: 'pointer',

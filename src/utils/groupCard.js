@@ -1,12 +1,13 @@
 import React from 'react';
 
-const GroupCard = ({ groupName, projectTitle, studentEmails, description, fileUrl }) => {
+const GroupCard = ({ groupName, projectTitle, studentEmails=[], description, fileUrl ,client}) => {
   return (
     <div style={styles.cardContainer}>
       <h2 style={styles.cardTitle}>{groupName}</h2>
       <h4 style={styles.cardSubtitle}>{projectTitle}</h4>
       <p><strong>Students:</strong> {studentEmails.join(', ')}</p>
       <p><strong>Description:</strong> {description}</p>
+      <p><strong>Client:</strong> {client}</p>
       <div style={styles.buttonGroup}>
         <button onClick={() => window.open(fileUrl, "_blank")} style={styles.viewButton}>View File</button>
         <a href={fileUrl} download style={styles.downloadLink}>Download</a>
