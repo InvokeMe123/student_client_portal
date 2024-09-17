@@ -214,10 +214,8 @@ if (loading) {
     setIsGeneralClicked(false); // Close general when Messages is clicked
   };
 
-  // Handle tab switch between Chat and Group
-  const handleTabSwitch = (tab) => {
-    setCurrentTab(tab);
-  };
+  
+  
 
   return (
     <div style={styles.container}>
@@ -346,46 +344,17 @@ if (loading) {
           <div style={styles.messagesDetails}>
             {/* Tabs for Chat and Group */}
             <div style={styles.tabContainer}>
-              <button
-                style={{
-                  ...styles.tabButton,
-                  backgroundColor: currentTab === 'chat' ? '#0077cc' : '#f0f0f0',
-                  color: currentTab === 'chat' ? '#fff' : '#000',
-                }}
-                onClick={() => handleTabSwitch('chat')}
-              >
-                Chat
-              </button>
-              <button
-                style={{
-                  ...styles.tabButton,
-                  backgroundColor: currentTab === 'group' ? '#0077cc' : '#f0f0f0',
-                  color: currentTab === 'group' ? '#fff' : '#000',
-                }}
-                onClick={() => handleTabSwitch('group')}
-              >
-                Group
-              </button>
+              Groups
             </div>
-
-            {/* Display Chat or Group messages based on the selected tab */}
-            {currentTab === 'chat' ? (
-              <div style={styles.messageList}>
-                <h3>Chat Messages</h3>
-                <ul style={styles.messagesList}>
-                  <li>John: Hey, can we meet tomorrow?</li>
-                  <li>Student: Yes, let’s schedule at 3 PM.</li>
-                </ul>
-              </div>
-            ) : (
-              <div style={styles.messageList}>
+            <div style={styles.messageList}>
                 <h3>Group Messages</h3>
                 <ul style={styles.messagesList}>
                   <li>Group Message 1: Project meeting tomorrow at 2 PM.</li>
                   <li>Group Message 2: Don’t forget to submit the assignments!</li>
                 </ul>
               </div>
-            )}
+            {/* Display Chat or Group messages based on the selected tab */}
+            
           </div>
         )}
       </div>
