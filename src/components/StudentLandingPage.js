@@ -10,23 +10,32 @@ import { useHistory } from 'react-router-dom';
 const ProfileComponent = ({ studentData, profileImage, setProfileImage }) => {
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
+    
     if (!file) return;
-
+  
+    // Check if the selected file is an image
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif']; // You can add more image types if needed
+    if (!validImageTypes.includes(file.type)) {
+      alert("Please upload a valid image file (JPEG, PNG, or GIF).");
+      return;
+    }
+  
     try {
       const storageRef = ref(storage, `profile_images/${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
-
+  
       // Update Firestore document with new profile image URL
       const userDocRef = doc(firestore, 'users', studentData.uid);
       await updateDoc(userDocRef, { profileImage: downloadURL });
-
+  
       setProfileImage(downloadURL);
       console.log("Image uploaded and profile updated with URL:", downloadURL);
     } catch (error) {
       console.error("Error uploading image:", error);
     }
   };
+  
 
   return (
     <div style={styles.fullContent}>
