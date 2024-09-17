@@ -8,7 +8,7 @@ const CreateGroup = () => {
   const [listOfStudents, setListOfStudents] = useState('');
   const [singleClient, setSingleClient] = useState('');
   const [file, setFile] = useState(null);
-  const [teacher, setTeacher] = useState('');  // Assume this is the logged-in teacher's name
+  //const [teacher, setTeacher] = useState('');  // Assume this is the logged-in teacher's name
 
   const history = useHistory();  // For navigation
 
@@ -21,7 +21,7 @@ const CreateGroup = () => {
       listOfStudents,
       singleClient,
       file,
-      teacher
+      //teacher
     });
     // Handle form submission logic here
   };
@@ -48,7 +48,7 @@ const CreateGroup = () => {
         {renderInput('List of Students:', listOfStudents, setListOfStudents)}
         {renderInput('Client:', singleClient, setSingleClient)}
         {renderFileInput('File:', file, handleFileChange, handleDeleteFile)}
-        {renderInput('Teacher (Creator):', teacher, setTeacher, true)}
+       
         <div style={styles.buttonGroup}>
           <button type="button" onClick={handleBack} style={styles.backButton}>Back</button>
           <button type="submit" style={styles.button}>Create</button>

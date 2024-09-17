@@ -207,7 +207,7 @@ if (loading) {
           to="/create-group"
           style={{
             ...styles.createGroupButton,
-            backgroundColor: isHovered ? '#0077cc' : '#00aaff', // Change color based on hover state
+            backgroundColor: isHovered ? '#0077cc' : '#902bf5', // Change color based on hover state
           }}
           onMouseEnter={() => setIsHovered(true)} // Trigger hover
           onMouseLeave={() => setIsHovered(false)} // Remove hover
@@ -325,7 +325,7 @@ const styles = {
   },
   sidebar: {
     width: '25%',
-    backgroundColor: '#fff',
+    backgroundColor: '#902bf5',
     padding: '20px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     borderRadius: '10px',
@@ -342,38 +342,45 @@ const styles = {
   },
   teacherName: {
     fontSize: '24px',
+    color: 'white',
     fontWeight: 'bold',
     marginBottom: '20px',
     textAlign: 'center', // Center the name
   },
   generalSection: {
     cursor: 'pointer',
-    padding: '15px',
-    backgroundColor: '#e0e0e0',
+    color: '#902bf5',
+    padding: '13px',
+    margin: '15px 0px',
+    backgroundColor: 'white',
     borderRadius: '10px',
     textAlign: 'center',
     boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)', // Popping out effect
     transition: 'all 0.3s ease', // Smooth transition
-    width: '80%', // Centered section width
+    width: '60%', // Centered section width
     marginBottom: '20px', // Space below for Messages
+    //boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)',
   },
   generalTitle: {
-    margin: 0,
+    margin: '9px',
     fontSize: '18px',
     fontWeight: 'bold',
   },
   messagesSection: {
     cursor: 'pointer',
-    padding: '15px',
-    backgroundColor: '#e0e0e0',
+    color: '#902bf5',
+    margin: '10px',
+    padding: '13px',
+    backgroundColor: 'white',
     borderRadius: '10px',
     textAlign: 'center',
     boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)', // Popping out effect
     transition: 'all 0.3s ease', // Smooth transition
-    width: '80%',
+    width: '60%',
+    //boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)',
   },
   messagesTitle: {
-    margin: 0,
+    margin: '9px',
     fontSize: '18px',
     fontWeight: 'bold',
   },
@@ -444,10 +451,10 @@ const styles = {
   createGroupButton: {
     position: 'absolute',
     top: '20px', // Place the button at the top of the page
-    left: '50%',
+    left: '40%',
     transform: 'translateX(-50%)',
-    padding: '45px 80px', // Triple padding for top/bottom, double padding for left/right
-    backgroundColor: '#00aaff', // Sky blue color (default)
+    padding: '25px 60px', // Triple padding for top/bottom, double padding for left/right
+    backgroundColor: '#902bf5',
     color: '#fff',
     borderRadius: '10px',
     textDecoration: 'none',
@@ -455,6 +462,7 @@ const styles = {
     fontWeight: 'bold',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     transition: 'background-color 0.3s ease',
+
   },
 };
 
