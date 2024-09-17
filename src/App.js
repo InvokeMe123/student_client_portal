@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import LoginForm from './template/login';
 import UserRegistration from './template/registration';
+import TeacherLandingPage from './components/TeacherLandingPage';
 
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
       <Switch>
         <Route path="/login" exact component={LoginForm} />
         <Route path="/register" component={UserRegistration} />
+        <Route path="/teacher" component={TeacherLandingPage} /> {/* Add Teacher Landing Page Route */}
         <Route path="/" exact component={LoginForm} />
       </Switch>
     </Router>
