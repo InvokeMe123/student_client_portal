@@ -104,12 +104,13 @@ const AnnouncementsWidget = ({groupsData, studentData}) => {
           isInGroup && (
             <GroupCard
               key={groupInfo.id||index}
-              groupName={groupInfo.groupName}
+              groupName={groupInfo.groupname}
               projectTitle={groupInfo.projectTitle}
               studentEmails={groupInfo.listOfStudents}
               description={groupInfo.description}
               client={groupInfo.client}
               fileUrl={groupInfo.fileDownloadUrl}
+              chatId={groupInfo.chatId}
             />
           )
         );

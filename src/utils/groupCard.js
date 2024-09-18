@@ -3,12 +3,19 @@ import { updateDoc,getDocs ,doc, where } from 'firebase/firestore'; // Firestore
 import { firestore, storage } from '../firebase_setup/firebase'; // Your Firebase setup
 import React,{useState} from 'react';
 import { collection,query} from 'firebase/firestore'; // Firestore functions
+import MessageBox from '../components/chat/messageBox';
 
 
-const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileUrl,client,isCreator}) => {
+const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileUrl,client,isCreator,chatId}) => {
   const [isEditing, setIsEditing] = useState(false); // Control file upload form visibility
   const [newFileUrl, setNewFileUrl] = useState(fileUrl); // Track new file URL
   const [uploading, setUploading] = useState(false); // Track uploading state
+  const [messageVisible, setMessageVisible] = useState(false);
+    const [message, setMessage] = useState('');
+    const showMessage = () => {
+      setMessage('This is an important message!');
+      setMessageVisible(true);
+    };
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -48,10 +55,11 @@ const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileU
     }
   };
   
+  
   return (
     <div style={styles.cardContainer}>
       <h2 style={styles.cardTitle}>{groupName}</h2>
-      <h4 style={styles.cardSubtitle}>{projectTitle}</h4>
+      <h4 style={styles.cardSubtitle}>Project Title:{projectTitle}</h4>
       <p><strong>Students:</strong> {studentEmails.join(', ')}</p>
       <p><strong>Description:</strong> {description}</p>
       <p><strong>Client:</strong> {client}</p>
@@ -65,7 +73,12 @@ const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileU
       <div style={styles.buttonGroup}>
         <button onClick={() => window.open(fileUrl, "_blank")} style={styles.viewButton}>View File</button>
         <a href={fileUrl} download style={styles.downloadLink}>Download</a>
-        <button style={styles.chatButton}>Open Chat</button>
+        <button style={styles.chatButton} onClick={showMessage}>Open Chat</button>
+        <MessageBox 
+          chatId={chatId} 
+          visible={messageVisible} 
+          onClose={() => setMessageVisible(false)} 
+        />
         
         {isCreator && (
           <button onClick={() => setIsEditing(!isEditing)} style={styles.editButton}>

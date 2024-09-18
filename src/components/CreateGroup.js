@@ -129,9 +129,26 @@ const CreateGroup = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-
     try {
       setSubmit(true);
+  
+      // Initialize chat data for the group
+      const chatData = {
+        groupName: groupname, // Linking chat to the group name
+        participants: [...listOfStudents, client, teacher], // Including all participants
+        lastMessage: {
+          text: "Welcome to the group chat!",
+          sender: teacher,
+          timestamp: new Date(),
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+  
+      // Add chat to Firestore under 'chats' with a sub-collection for messages
+      const chatRef = await addDoc(collection(firestore, 'chats'), chatData);
+  
+      // Create group data after obtaining the chatRef.id
       const groupData = {
         groupname,
         projectTitle,
@@ -141,42 +158,30 @@ const CreateGroup = () => {
         teacher,
         fileDownloadUrl,
         createdAt: new Date(),
+        chatId: chatRef.id, // Include the chat ID in the group data
       };
-      setSubmit(false);
-     
+  
+      // Add group to Firestore
       await addDoc(collection(firestore, "groups"), groupData);
-        // Initialize chat data for the group
-        const chatData = {
-          groupName: groupData.groupname, // Linking chat to the group name
-          participants: [...groupData.listOfStudents, groupData.client, groupData.teacher], // Including all participants
-          lastMessage: {
-              text: "Welcome to the group chat!",
-              sender: groupData.teacher,
-              timestamp: new Date(),
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-      };
-
-      // Add chat to Firestore under 'chats' with a sub-collection for messages
-      const chatRef = await addDoc(collection(firestore, 'chats'), chatData);
-
+  
       // Initialize the first message in the 'messages' sub-collection
       await addDoc(collection(firestore, `chats/${chatRef.id}/messages`), {
-          text: "Welcome to the group chat!",
-          sender: groupData.teacher,
-          timestamp: new Date(),
-          readBy: [groupData.teacher], // Initially, only the sender has 'read' the message
+        text: "Welcome to the group chat!",
+        sender: teacher,
+        timestamp: new Date(),
+        readBy: [teacher], // Initially, only the sender has 'read' the message
       });
-     
-
-
+  
       console.log('Group created with:', groupData);
+      setSubmit(false);
       history.push('/teacher');  
+  
     } catch (error) {
       console.error('Error creating group:', error);
+      setSubmit(false);
     }
   };
+  
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);

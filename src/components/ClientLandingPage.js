@@ -90,12 +90,13 @@ const ProjectsComponent = ({groupsData,clientData}) => {
           isInGroup && (
             <GroupCard
               key={groupInfo.id||index}
-              groupName={groupInfo.groupName}
+              groupName={groupInfo.groupname}
               projectTitle={groupInfo.projectTitle}
               studentEmails={groupInfo.listOfStudents}
               description={groupInfo.description}
               fileUrl={groupInfo.fileDownloadUrl}
               client={groupInfo.client}
+              chatId={groupInfo.chatId}
             />
           )
         );
