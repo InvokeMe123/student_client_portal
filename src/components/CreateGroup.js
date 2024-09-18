@@ -31,6 +31,7 @@ const CreateGroup = () => {
   const [searchClientQuery, setSearchClientQuery] = useState(''); // for searching client
   const [dropdownClientOpen, setDropdownClientOpen] = useState(false);
   const [filteredClients, setFilteredClients] = useState([]);  
+  const [submit, setSubmit] = useState(false);  
 
 
   const history = useHistory(); 
@@ -127,9 +128,10 @@ const CreateGroup = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
 
     try {
-
+      setSubmit(true);
       const groupData = {
         groupname,
         projectTitle,
@@ -140,8 +142,33 @@ const CreateGroup = () => {
         fileDownloadUrl,
         createdAt: new Date(),
       };
+      setSubmit(false);
      
       await addDoc(collection(firestore, "groups"), groupData);
+        // Initialize chat data for the group
+        const chatData = {
+          groupName: groupData.groupname, // Linking chat to the group name
+          participants: [...groupData.listOfStudents, groupData.client, groupData.teacher], // Including all participants
+          lastMessage: {
+              text: "Welcome to the group chat!",
+              sender: groupData.teacher,
+              timestamp: new Date(),
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+      };
+
+      // Add chat to Firestore under 'chats' with a sub-collection for messages
+      const chatRef = await addDoc(collection(firestore, 'chats'), chatData);
+
+      // Initialize the first message in the 'messages' sub-collection
+      await addDoc(collection(firestore, `chats/${chatRef.id}/messages`), {
+          text: "Welcome to the group chat!",
+          sender: groupData.teacher,
+          timestamp: new Date(),
+          readBy: [groupData.teacher], // Initially, only the sender has 'read' the message
+      });
+     
 
 
       console.log('Group created with:', groupData);
@@ -165,14 +192,16 @@ const CreateGroup = () => {
       }
       try {
         // Upload the file to Firebase Storage
-        const storageRef = ref(storage, `groupFiles/${selectedFile.name}`);
+        if(submit){const storageRef = ref(storage, `groupFiles/${selectedFile.name}`);
         const snapshot = await uploadBytes(storageRef, selectedFile);
         const downloadURL = await getDownloadURL(snapshot.ref);
+        setFileDownloadLink(downloadURL);
         console.log("File uploaded to Firebase Storage. Download URL:", downloadURL);
-        console.log('File uploaded succesfully');
-        fileDownloadUrl = downloadURL;
+        console.log('File uploaded succesfully');}
+        
+        
 
-        //setFileDownloadLink(downloadURL);
+      
         setFile(selectedFile.name);
         
       } catch (error) {
@@ -182,6 +211,7 @@ const CreateGroup = () => {
       
     }
   };
+  
 
 
   const handleDeleteFile = () => {
