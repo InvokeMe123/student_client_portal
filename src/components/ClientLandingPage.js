@@ -8,7 +8,46 @@ import { useHistory } from 'react-router-dom';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage methods
 import GroupCard from '../utils/groupCard';
 
-const ProfileComponent = ({ clientData, profileImage, setProfileImage }) => {
+const ProfileComponent = ({ clientData, profileImage, setProfileImage, fetchClientData}) => {
+  const [editMode, setEditMode] = useState(false);
+const [editedData, setEditedData] = useState({});
+const handleChange = (event) => {
+  const { name, value } = event.target;
+  setEditedData(prev => ({ ...prev, [name]: value }));}
+  const saveChanges = async () => {
+    const userDocRef = doc(firestore, 'users', clientData.uid);  // Reference to the user's document
+    console.log('this is the students uid', clientData.uid);
+  
+    const updatedData = {
+      age: editedData.age || clientData.age,
+      email: editedData.email || clientData.email,
+      extraField: editedData.extraField || clientData.extraField,
+      name: editedData.name || clientData.name,
+      phone: editedData.phone || clientData.phone,
+      profileImage: profileImage  // Assumes profileImage state is updated via handleImageUpload
+    };
+  
+    try {
+      await updateDoc(userDocRef, updatedData);
+      console.log("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+  
+  
+  const handleSaveChanges = () => {
+    setEditMode(false);
+    // Assuming saveChanges function exists and performs some operations
+    saveChanges();
+    fetchClientData();
+    
+  };
+
+  const cancelEdit=()=>{
+    setEditMode(false);
+  }
+
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
 
@@ -41,25 +80,44 @@ const ProfileComponent = ({ clientData, profileImage, setProfileImage }) => {
   return (
     <div style={styles.fullContent}>
       <div style={styles.profileHeader}>
+      {!editMode && (
+            <button style={styles.editButton} onClick={() => { setEditMode(true); setEditedData(clientData); }}>
+              Edit
+            </button>
+          )}
+      <div style={styles.headerDetails}>
         <img src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} alt="Profile" style={styles.profileImage} />
-        <div>
+        <div style={styles.nameAndButtonContainer}>
           <h3>{clientData.name}</h3>
-
+          
         </div>
       </div>
-      <div style={styles.profileDetails}>
+    </div>
+    <div style={styles.profileDetails}>
         <div style={styles.profileSection}>
           <h4>General Info</h4>
-
-          <p><strong>Email:</strong> {clientData.email}</p>
-          <p><strong>Contact:</strong> {clientData.phone}</p>
-          <p><strong>Age:</strong> {clientData.age || 'N/A'}</p>
-          <p><strong>Faculty:</strong> {clientData.extraField || 'N/A'}</p>
-
+          {editMode ? (
+            <>
+              <p><strong>Email:</strong><input type="email" value={editedData.email || clientData.email} name="email" onChange={handleChange} /></p>
+              <p><strong>Contact:</strong><input type="text" value={editedData.phone || clientData.phone} name="phone" onChange={handleChange} /></p>
+              <p><strong>Age:</strong><input type="text" value={editedData.age || clientData.age} name="age" onChange={handleChange} /></p>
+              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || clientData.extraField} name="extraField" onChange={handleChange} /></p>
+              <h4>Upload Profile Photo</h4>
+              <input type="file" onChange={handleImageUpload} />
+              <div>
+                <button onClick={handleSaveChanges}>Save Changes</button>
+                <button onClick={cancelEdit}>Cancel</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p><strong>Email:</strong> {clientData.email}</p>
+              <p><strong>Contact:</strong> {clientData.phone}</p>
+              <p><strong>Age:</strong> {clientData.age || 'N/A'}</p>
+              <p><strong>Faculty:</strong> {clientData.extraField || 'N/A'}</p>
+            </>
+          )}
         </div>
-        <h4>Upload Profile Photo</h4>
-        <input type="file" onChange={handleImageUpload} />
-
       </div>
     </div>
   );
@@ -140,9 +198,24 @@ const ClientLandingPage = () => {
   const history = useHistory();
   const [groupsData, setGroups] = useState([]);
 
+ 
   useEffect(() => {
-    fetchClientData();
+    const auth = getAuth(); // Initialize Firebase Auth
+  
+    // Wait for Firebase Auth to confirm user authentication state
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is logged in, fetch the teacher data from Firestore
+        fetchClientData();
     fetchGroups();
+      } else {
+        console.log("No user is currently logged in");
+        setLoading(false); // Stop loading if no user is logged in
+      }
+    });
+  
+    // Cleanup the subscription to avoid memory leaks
+    return () => unsubscribe();
   }, []);
 
   
@@ -224,7 +297,7 @@ const ClientLandingPage = () => {
         <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
-      {activeSection === 'profile' && <ProfileComponent clientData={clientData} profileImage={profileImage} setProfileImage={setProfileImage} />}
+      {activeSection === 'profile' && <ProfileComponent clientData={clientData} profileImage={profileImage} setProfileImage={setProfileImage} fetchClientData={fetchClientData} />}
         {activeSection === 'projects' && <ProjectsComponent groupsData={groupsData} clientData={clientData}/>}
         {activeSection === 'communications' && <CommunicationsComponent />}
         {activeSection === 'support' && <SupportComponent />}

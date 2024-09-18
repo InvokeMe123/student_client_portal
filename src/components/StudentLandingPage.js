@@ -8,10 +8,53 @@ import { getAuth,onAuthStateChanged,signOut } from 'firebase/auth'; // Import Fi
 import { useHistory } from 'react-router-dom';
 import GroupCard from '../utils/groupCard';
 
-const ProfileComponent = ({ studentData, profileImage, setProfileImage }) => {
+const ProfileComponent = ({ studentData, profileImage, setProfileImage, fetchStudentData}) => {
+  const [editMode, setEditMode] = useState(false);
+const [editedData, setEditedData] = useState({});
+
+const handleChange = (event) => {
+  const { name, value } = event.target;
+  setEditedData(prev => ({ ...prev, [name]: value }));}
+  const saveChanges = async () => {
+    const userDocRef = doc(firestore, 'users', studentData.uid);  // Reference to the user's document
+    console.log('this is the students uid', studentData.uid);
+  
+    const updatedData = {
+      age: editedData.age || studentData.age,
+      email: editedData.email || studentData.email,
+      extraField: editedData.extraField || studentData.extraField,
+      name: editedData.name || studentData.name,
+      phone: editedData.phone || studentData.phone,
+      profileImage: profileImage  // Assumes profileImage state is updated via handleImageUpload
+    };
+  
+    try {
+      await updateDoc(userDocRef, updatedData);
+      console.log("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+  
+  
+  const handleSaveChanges = () => {
+    setEditMode(false);
+    // Assuming saveChanges function exists and performs some operations
+    saveChanges();
+    fetchStudentData();
+    
+  };
+
+  const cancelEdit=()=>{
+    setEditMode(false);
+  }
+
+
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    
 
     try {
       const storageRef = ref(storage, `profile_images/${file.name}`);
@@ -31,26 +74,45 @@ const ProfileComponent = ({ studentData, profileImage, setProfileImage }) => {
 
   return (
     <div style={styles.fullContent}>
-      <div style={styles.profileHeader}>
+    <div style={styles.profileHeader}>
+    {!editMode && (
+            <button style={styles.editButton} onClick={() => { setEditMode(true); setEditedData(studentData); }}>
+              Edit
+            </button>
+          )}
+      <div style={styles.headerDetails}>
         <img src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} alt="Profile" style={styles.profileImage} />
-        <div>
+        <div style={styles.nameAndButtonContainer}>
           <h3>{studentData.name}</h3>
           
         </div>
       </div>
-      <div style={styles.profileDetails}>
+    </div>
+    <div style={styles.profileDetails}>
         <div style={styles.profileSection}>
           <h4>General Info</h4>
-          
-          <p><strong>Email:</strong> {studentData.email}</p>
-          <p><strong>Contact:</strong> {studentData.phone}</p>
-          <p><strong>Age:</strong> {studentData.age || 'N/A'}</p>
-          <p><strong>Faculty:</strong> {studentData.extraField || 'N/A'}</p>
-        
+          {editMode ? (
+            <>
+              <p><strong>Email:</strong><input type="email" value={editedData.email || studentData.email} name="email" onChange={handleChange} /></p>
+              <p><strong>Contact:</strong><input type="text" value={editedData.phone || studentData.phone} name="phone" onChange={handleChange} /></p>
+              <p><strong>Age:</strong><input type="text" value={editedData.age || studentData.age} name="age" onChange={handleChange} /></p>
+              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || studentData.extraField} name="extraField" onChange={handleChange} /></p>
+              <h4>Upload Profile Photo</h4>
+              <input type="file" onChange={handleImageUpload} />
+              <div>
+                <button onClick={handleSaveChanges}>Save Changes</button>
+                <button onClick={cancelEdit}>Cancel</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p><strong>Email:</strong> {studentData.email}</p>
+              <p><strong>Contact:</strong> {studentData.phone}</p>
+              <p><strong>Age:</strong> {studentData.age || 'N/A'}</p>
+              <p><strong>Faculty:</strong> {studentData.extraField || 'N/A'}</p>
+            </>
+          )}
         </div>
-        <h4>Upload Profile Photo</h4>
-        <input type="file" onChange={handleImageUpload} />
-        
       </div>
     </div>
   );
@@ -128,10 +190,25 @@ const StudentLandingPage = () => {
   const history = useHistory();
   const [groupsData, setGroups] = useState([]);
 
-  useEffect(() => {
-    fetchStudentData();
-    fetchGroups();
-  }, []);
+  
+useEffect(() => {
+  const auth = getAuth(); // Initialize Firebase Auth
+
+  // Wait for Firebase Auth to confirm user authentication state
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is logged in, fetch the teacher data from Firestore
+      fetchStudentData();
+      fetchGroups();
+    } else {
+      console.log("No user is currently logged in");
+      setLoading(false); // Stop loading if no user is logged in
+    }
+  });
+
+  // Cleanup the subscription to avoid memory leaks
+  return () => unsubscribe();
+}, []);
 
 
   const fetchGroups = async () => {
@@ -219,7 +296,7 @@ const StudentLandingPage = () => {
         <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
-      {activeSection === 'profile' && <ProfileComponent studentData={studentData} profileImage={profileImage} setProfileImage={setProfileImage} />}
+      {activeSection === 'profile' && <ProfileComponent studentData={studentData} profileImage={profileImage} setProfileImage={setProfileImage} fetchStudentData={fetchStudentData}/>}
         {activeSection === 'courses' && <CoursesComponent />}
         {activeSection === 'messages' && <MessagesComponent />}
         {activeSection === 'support' && <SupportComponent />}
@@ -271,10 +348,6 @@ const styles = {
     boxShadow: '0 4px 8px rgba(0,0,0,0.2), 0 -4px 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
     cursor: 'pointer',
-    ':hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 6px 12px rgba(0,0,0,0.25), 0 -6px 12px rgba(0,0,0,0.15), -6px 0 12px rgba(0,0,0,0.15), 6px 0 12px rgba(0,0,0,0.15)',
-    },
   },
   content: {
     flex: 1,
@@ -284,21 +357,48 @@ const styles = {
     flexDirection: 'column',
   },
   fullContent: {
-    width: '100%', // Ensures the content uses the full area
+    width: '100%',
     padding: '40px 50px',
     margin: '10px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
+  profileImage: {
+    width: '120px',
+    height: '120px',
+    borderRadius: '50%',
+    position: 'absolute',  // Make the profile image positioned absolutely
+    top: '20px',           // Adjust as needed to place it where you want
+    left: '20px',          // Adjust as needed to place it in the corner
+  },
   profileHeader: {
+    position: 'relative',  // Make the header relative for absolute positioning of the image
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     marginBottom: '20px',
+    padding: '40px',       // Add padding to ensure content doesn’t overlap with the image
   },
-  profileImage: {
-    marginRight: '20px',
-    width: '150px',
-    height: '150px',
-    borderRadius: '50%',
+  headerDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center', // Aligns items in the center after the image is positioned separately
+  },
+  nameAndButtonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center', // Center aligns items horizontally
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  editButton: {
+    alignSelf: 'center',  // Keep the button in the center under the name and details
+    marginTop: '10px',
+    backgroundColor: 'blue',
+    color: 'white',
+    border: 'none',
+    padding: '10px 20px',
+    cursor: 'pointer',
+    borderRadius: '5px',
   },
   profileDetails: {
     display: 'flex',
@@ -306,7 +406,7 @@ const styles = {
   },
   profileSection: {
     marginBottom: '10px',
-  }
+  },
 };
 
 export default StudentLandingPage;
