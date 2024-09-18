@@ -32,6 +32,7 @@ const CreateGroup = () => {
   const [dropdownClientOpen, setDropdownClientOpen] = useState(false);
   const [filteredClients, setFilteredClients] = useState([]);  
   const [submit, setSubmit] = useState(false);  
+  const[isfileUploading,setFileUploading] = useState(false);
 
 
   const history = useHistory(); 
@@ -125,12 +126,28 @@ const CreateGroup = () => {
       setListOfStudents([]);  // Deselect all students
     }
   };
-
+  const isValidGroupData = (groupData) => {
+    // Check if any required fields are empty, just spaces, or non-empty arrays where applicable
+    const requiredFields = ['groupname', 'projectTitle', 'description', 'client','listOfStudents', 'teacher', 'fileDownloadUrl', 'chatId'];
+    for (const field of requiredFields) {
+      const value = groupData[field];
+      // Check if the field is either undefined, null, empty string, or an empty array (for listOfStudents)
+      if (value === undefined || value === null|| value === '') {
+        return false;
+      }
+      // Special check for arrays to ensure they are not empty
+      if (field === 'listOfStudents' && (!Array.isArray(value) || value.length === 0)) {
+        return false;
+      }
+    }
+    return true;
+  };
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     
     try {
-      setSubmit(true);
+     
   
       // Initialize chat data for the group
       const chatData = {
@@ -156,25 +173,39 @@ const CreateGroup = () => {
         client,
         listOfStudents,  // Email addresses of selected students
         teacher,
-        fileDownloadUrl,
+        fileDownloadUrl: fileDownloadUrl,
         createdAt: new Date(),
         chatId: chatRef.id, // Include the chat ID in the group data
       };
   
       // Add group to Firestore
-      await addDoc(collection(firestore, "groups"), groupData);
+      if (isValidGroupData(groupData)) {
+        try {
+          // Add group to Firestore
+          const docRef = await addDoc(collection(firestore, "groups"), groupData);
+          console.log("Group created with ID: ", docRef.id);
+    
+          // Initialize the first message in the 'messages' sub-collection
+          await addDoc(collection(firestore, `chats/${chatRef.id}/messages`), {
+            text: "Welcome to the group chat!",
+            sender: teacher,
+            timestamp: new Date(),
+            readBy: [teacher], // Initially, only the sender has 'read' the message
+          });
+          setSubmit(false);
+          history.push('/teacher'); 
+        } catch (error) {
+          console.error("Error adding document: ", error);
+        }
+      } else {
+        console.error("Invalid group data provided. All fields must be filled.");
+        alert('One or many fields are empty');
+        // Optionally handle the error by alerting the user or showing a message on the UI
+      }
   
-      // Initialize the first message in the 'messages' sub-collection
-      await addDoc(collection(firestore, `chats/${chatRef.id}/messages`), {
-        text: "Welcome to the group chat!",
-        sender: teacher,
-        timestamp: new Date(),
-        readBy: [teacher], // Initially, only the sender has 'read' the message
-      });
-  
-      console.log('Group created with:', groupData);
-      setSubmit(false);
-      history.push('/teacher');  
+    
+      
+       
   
     } catch (error) {
       console.error('Error creating group:', error);
@@ -186,36 +217,43 @@ const CreateGroup = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
-  const handleFileChange =async (event) => {
+  const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      const currentUser=  auth.currentUser;
-
-      if(!currentUser){
-        console.log('no user logged in');
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        console.log('No user logged in');
         return;
       }
+      
       try {
-        // Upload the file to Firebase Storage
-        if(submit){const storageRef = ref(storage, `groupFiles/${selectedFile.name}`);
-        const snapshot = await uploadBytes(storageRef, selectedFile);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        setFileDownloadLink(downloadURL);
-        console.log("File uploaded to Firebase Storage. Download URL:", downloadURL);
-        console.log('File uploaded succesfully');}
-        
-        
-
-      
-        setFile(selectedFile.name);
-        
+        // Ensure no uploads are attempted when already submitting another form
+        if (!submit) {
+          setFileUploading(true);
+          const storageRef = ref(storage, `groupFiles/${selectedFile.name}`);
+          const snapshot = await uploadBytes(storageRef, selectedFile);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+  
+          // Update the state with the new download URL
+          setFileDownloadLink(downloadURL);
+          console.log("File uploaded to Firebase Storage. Download URL:", downloadURL);
+  
+          // Log success message
+          console.log('File uploaded successfully');
+          setFileUploading(false);
+        } else {
+          console.log('Submission in progress, file upload blocked.');
+        }
       } catch (error) {
-        console.error('Error uploading document', error);
+        console.error('Error uploading file:', error);
       }
-
-      
     }
   };
+  useEffect(() => {
+    console.log("Current file download URL:", fileDownloadUrl);
+  }, [fileDownloadUrl]);  // Dependency array ensures this runs only when fileDownloadUrl changes
+  
+  
   
 
 
@@ -249,7 +287,7 @@ useEffect(() => {
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <form onSubmit={isfileUploading?null:handleSubmit} style={styles.form}>
         <h1 style={styles.header}>Create Group</h1>
         {renderInput('Group Name:', groupname, setGroupname)}
         {renderInput('Project Title:', projectTitle, setProjectTitle)}
@@ -348,7 +386,7 @@ useEffect(() => {
 
         <div style={styles.buttonGroup}>
           <button type="button" onClick={handleBack} style={styles.backButton}>Back</button>
-          <button type="submit" style={styles.button}>Create</button>
+          <button type="submit" style={styles.button} >Create</button>
         </div>
       </form>
     </div>

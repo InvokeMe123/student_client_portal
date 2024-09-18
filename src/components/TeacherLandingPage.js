@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage methods
 import { collection, getDocs, query, where } from "firebase/firestore"; // Firestore functions
-import { updateDoc } from "firebase/firestore"; // Firestore functions to fetch teacher data
+import { updateDoc,doc } from "firebase/firestore"; // Firestore functions to fetch teacher data
 import { firestore, storage } from "../firebase_setup/firebase"; // Your Firestore setup
 
 import GroupCard from "../utils/groupCard";
@@ -22,6 +22,46 @@ const TeacherLandingPage = () => {
   const [loading, setLoading] = useState(true); // Loading state to track when data is being fetched
   const [groups, setGroups] = useState([]);
   const [currentUserData, setCurrentUserData] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  
+
+  const toggleEditMode=()=>{
+    setEditMode(!editMode);
+  }
+  const handleSaveChanges=()=>{
+    saveChanges();
+    setEditMode(false);
+  }
+  const saveChanges=async()=>{
+    const auth = getAuth(); // Get the Firebase Auth instance
+  const user = auth.currentUser; // Get the currently logged in user
+  if (!user) {
+    console.log("No user is logged in");
+    return;
+  }
+  // Get a reference to the user document in Firestore
+  const userDocRef = doc(firestore, "users", user.uid);
+
+  // Prepare the data to be updated based on the latest state
+  const updatedData = {
+    name: teacherData[0].name,
+    age: teacherData[0].age,
+    email: teacherData[0].email,
+    extraField: teacherData[0].extraField,
+    contact: teacherData[0].phone
+  };
+  try {
+    // Update the document in Firestore
+    await updateDoc(userDocRef, updatedData);
+    console.log("Document successfully updated!");
+    
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+
+  }
+  
+  
 
   const fetchCurrentUser = async () => {
     const auth = getAuth();
@@ -299,39 +339,96 @@ const TeacherLandingPage = () => {
         </div>
 
         {/* Display "General" Details if clicked */}
+
         {isGeneralClicked && (
-          <div style={styles.generalDetails}>
-            {/* Edit Button */}
-            <button style={styles.editButton}>Edit</button>
-            <h3>General Information</h3>
-            <ul style={styles.generalList}>
-              {teacherData && teacherData.length > 0 ? (
-                teacherData.map((teacher, index) => (
-                  <li key={teacher.uid || index}>
-                    {" "}
-                    {/* Using teacher.uid or index as fallback for key */}
-                    <strong>Name:</strong> {teacher.name || "N/A"}
-                    <br />
-                    <strong>Age:</strong> {teacher.age ?? "N/A"}
-                    <br />
-                    <strong>Email:</strong> {teacher.email || "N/A"}
-                    <br />
-                    <strong>Department:</strong> {teacher.extraField || "N/A"}
-                    <br />
-                    <strong>Contact:</strong> {teacher.contact || "N/A"}
-                    <br />
-                  </li>
-                ))
-              ) : (
-                <p>No teacher data available</p> // Show message if no data is available
-              )}
-            </ul>
-            {/* Profile Photo Upload in the General Section */}
-            <h4>Upload Profile Photo</h4>
-            <input type="file" onChange={handleImageUpload} />
-            {uploading && <p>Uploading...</p>} {/* Show uploading progress */}
-          </div>
-        )}
+  <div style={styles.generalDetails}>
+    {/* Toggle Edit/Save Button */}
+    <button style={styles.editButton} onClick={editMode?handleSaveChanges:toggleEditMode}>
+      {editMode ? "Save" : "Edit"}
+    </button>
+    
+    <h3>General Information</h3>
+    <ul style={styles.generalList}>
+      {teacherData && teacherData.length > 0 ? (
+        teacherData.map((teacher, index) => (
+          <li key={teacher.uid || index}>
+            {/* Conditionally render input fields or plain text */}
+            <strong>Name:</strong> 
+            {editMode ? (
+              <input type="text" value={teacher.name} onChange={(e) => {
+                const newTeacherData = [...teacherData];
+                newTeacherData[index].name = e.target.value;
+                setTeacherData(newTeacherData);
+              }} />
+            ) : (
+              <span> {teacher.name || "N/A"}</span>
+            )}
+            <br />
+
+            <strong>Age:</strong>
+            {editMode ? (
+              <input type="text" value={teacher.age} onChange={(e) => {
+                const newTeacherData = [...teacherData];
+                newTeacherData[index].age = e.target.value;
+                setTeacherData(newTeacherData);
+              }} />
+            ) : (
+              <span> {teacher.age || "N/A"}</span>
+            )}
+            <br />
+
+            <strong>Email:</strong>
+            {editMode ? (
+              <input type="text" value={teacher.email} onChange={(e) => {
+                const newTeacherData = [...teacherData];
+                newTeacherData[index].email = e.target.value;
+                setTeacherData(newTeacherData);
+              }} />
+            ) : (
+              <span> {teacher.email || "N/A"}</span>
+            )}
+            <br />
+
+            <strong>Department:</strong>
+            {editMode ? (
+              <input type="text" value={teacher.extraField} onChange={(e) => {
+                const newTeacherData = [...teacherData];
+                newTeacherData[index].extraField = e.target.value;
+                setTeacherData(newTeacherData);
+              }} />
+            ) : (
+              <span> {teacher.extraField || "N/A"}</span>
+            )}
+            <br />
+
+            <strong>Contact:</strong>
+            {editMode ? (
+              <input type="text" value={teacher.phone} onChange={(e) => {
+                const newTeacherData = [...teacherData];
+                newTeacherData[index].phone = e.target.value;
+                setTeacherData(newTeacherData);
+              }} />
+            ) : (
+              <span> {teacher.phone || "N/A"}</span>
+            )}
+            <br />
+          </li>
+        ))
+      ) : (
+        <p>No teacher data available</p> // Show message if no data is available
+      )}
+    </ul>
+    {/* Hide upload field unless in edit mode */}
+    {editMode && (
+      <>
+        <h4>Upload Profile Photo</h4>
+        <input type="file" onChange={handleImageUpload} />
+        {uploading && <p>Uploading...</p>} {/* Show uploading progress */}
+      </>
+    )}
+  </div>
+)}
+
         <button style={styles.editButton} onClick={handleLogout}>
           Log out
         </button>
