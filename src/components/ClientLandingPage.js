@@ -8,37 +8,35 @@ import { useHistory } from 'react-router-dom';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage methods
 import GroupCard from '../utils/groupCard';
 
-
-
 const ProfileComponent = ({ clientData, profileImage, setProfileImage }) => {
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
-    
+
     if (!file) return;
-  
+
     // Check if the selected file is an image
     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif']; // You can add more image types if needed
     if (!validImageTypes.includes(file.type)) {
       alert("Please upload a valid image file (JPEG, PNG, or GIF).");
       return;
     }
-  
+
     try {
       const storageRef = ref(storage, `profile_images/${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
-  
+
       // Update Firestore document with new profile image URL
       const userDocRef = doc(firestore, 'users', clientData.uid);
       await updateDoc(userDocRef, { profileImage: downloadURL });
-  
+
       setProfileImage(downloadURL);
       console.log("Image uploaded and profile updated with URL:", downloadURL);
     } catch (error) {
       console.error("Error uploading image:", error);
     }
   };
-  
+
 
   return (
     <div style={styles.fullContent}>
@@ -46,22 +44,22 @@ const ProfileComponent = ({ clientData, profileImage, setProfileImage }) => {
         <img src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} alt="Profile" style={styles.profileImage} />
         <div>
           <h3>{clientData.name}</h3>
-          
+
         </div>
       </div>
       <div style={styles.profileDetails}>
         <div style={styles.profileSection}>
           <h4>General Info</h4>
-          
+
           <p><strong>Email:</strong> {clientData.email}</p>
           <p><strong>Contact:</strong> {clientData.phone}</p>
           <p><strong>Age:</strong> {clientData.age || 'N/A'}</p>
           <p><strong>Faculty:</strong> {clientData.extraField || 'N/A'}</p>
-        
+
         </div>
         <h4>Upload Profile Photo</h4>
         <input type="file" onChange={handleImageUpload} />
-        
+
       </div>
     </div>
   );
@@ -71,14 +69,14 @@ const ProjectsComponent = ({groupsData,clientData}) => {
   if (!groupsData) return <div>Loading...</div>; // Render loading state if data is undefined
 
  return (
-  
+
   <div>
-    
+
     {groupsData.map((groupInfo,index) => {
         // Check if current user is either the teacher or in the studentEmails list
         console.log("Teacher name",groupInfo.teacher);
         console.log("Current username",clientData?.name );
-        
+
 
         const isInGroup =
       groupInfo.teacher?.trim().toLowerCase() === clientData?.name?.trim().toLowerCase() ||
@@ -104,7 +102,7 @@ const ProjectsComponent = ({groupsData,clientData}) => {
       })}
   </div>      
  );
-  
+
 };
 
 const CommunicationsComponent = () => (
@@ -199,6 +197,17 @@ const ClientLandingPage = () => {
       setLoading(false);
     }
   };
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      console.log("User logged out successfully!");
+      history.push('/login');
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Failed to log out!");
+    }
+  };
 
 
 
@@ -211,6 +220,7 @@ const ClientLandingPage = () => {
         <div style={styles.menuItem} onClick={() => setActiveSection('projects')}>Projects</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('communications')}>Messages</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('support')}>Support</div>
+        <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
       {activeSection === 'profile' && <ProfileComponent clientData={clientData} profileImage={profileImage} setProfileImage={setProfileImage} />}
