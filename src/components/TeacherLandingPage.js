@@ -272,6 +272,7 @@ if (loading) {
         // Check if current user is either the teacher or in the studentEmails list
         console.log("Teacher name",groupInfo.teacher);
         console.log("Current username",currentUserData?.name );
+        const isCreator=groupInfo.teacher===currentUserData?.name;
         
 
         const isInGroup =
@@ -285,13 +286,14 @@ if (loading) {
         return (
           isInGroup && (
             <GroupCard
-              key={groupInfo.id||index}
+              // key={groupInfo.id||index}
               groupName={groupInfo.groupName}
               projectTitle={groupInfo.projectTitle}
               studentEmails={groupInfo.listOfStudents}
               description={groupInfo.description}
               fileUrl={groupInfo.fileDownloadUrl}
               client={groupInfo.client}
+              isCreator={isCreator}
             />
           )
         );
