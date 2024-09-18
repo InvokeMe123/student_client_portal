@@ -6,6 +6,7 @@ import { updateDoc,doc } from 'firebase/firestore'; // Firestore functions to fe
 import { firestore,storage } from '../firebase_setup/firebase'; // Your Firestore setup
 import { getAuth,onAuthStateChanged,signOut } from 'firebase/auth'; // Import Firebase Auth to get current user
 import { useHistory } from 'react-router-dom';
+import GroupCard from '../utils/groupCard';
 
 const ProfileComponent = ({ studentData, profileImage, setProfileImage }) => {
   const handleImageUpload = async (event) => {
@@ -78,15 +79,45 @@ const SupportComponent = () => (
   </div>
 );
 
-const AnnouncementsWidget = () => (
-  <div style={styles.fullContent}>
-    <h3>Announcements</h3>
-    <ul>
-      <li>New library resources are now available online.</li>
-      <li>Office hours for Prof. Smith have changed.</li>
-    </ul>
-  </div>
-);
+const AnnouncementsWidget = ({groupsData, studentData}) => {
+  if (!groupsData) return <div>Loading...</div>; // Render loading state if data is undefined
+
+ return (
+
+  <div>
+    <div style={styles.title}>Added groups</div>
+    {groupsData.map((groupInfo,index) => {
+        // Check if current user is either the teacher or in the studentEmails list
+        console.log("Teacher name",groupInfo.teacher);
+        console.log("Current username",studentData?.name );
+
+
+        const isInGroup =
+      groupInfo.teacher?.trim().toLowerCase() === studentData?.name?.trim().toLowerCase() ||
+      groupInfo.listOfStudents?.some(email => email.trim().toLowerCase() === studentData?.email?.trim().toLowerCase()) ||
+      groupInfo.client?.trim().toLowerCase() === studentData?.email?.trim().toLowerCase();
+
+          console.log("is the user in the group", isInGroup);
+          console.log('this is the key',groupInfo.id);
+
+        return (
+          isInGroup && (
+            <GroupCard
+              key={groupInfo.id||index}
+              groupName={groupInfo.groupName}
+              projectTitle={groupInfo.projectTitle}
+              studentEmails={groupInfo.listOfStudents}
+              description={groupInfo.description}
+              client={groupInfo.client}
+              fileUrl={groupInfo.fileDownloadUrl}
+            />
+          )
+        );
+      })}
+  </div>      
+ );
+
+};
 
 const StudentLandingPage = () => {
   const [activeSection, setActiveSection] = useState('announcements');
@@ -94,6 +125,34 @@ const StudentLandingPage = () => {
   const [studentData, setStudentData] = useState({}); // Changed from array to object
   const [loading, setLoading] = useState(true);
   const history = useHistory();
+  const [groupsData, setGroups] = useState([]);
+
+  useEffect(() => {
+    fetchStudentData();
+    fetchGroups();
+  }, []);
+
+
+  const fetchGroups = async () => {
+    try {
+      // Assuming "groups" is your collection name in Firestore
+      const groupsRef = collection(firestore, 'groups');
+      const groupsSnapshot = await getDocs(groupsRef);
+
+      const groupsList = groupsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      console.log('The group list',groupsList);
+
+      setGroups(groupsList);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      setLoading(false);
+    }
+  };
   
   const fetchStudentData = async () => {
     const auth = getAuth();
@@ -156,13 +215,14 @@ const StudentLandingPage = () => {
         <div style={styles.menuItem} onClick={() => setActiveSection('courses')}>My Courses</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('messages')}>Messages</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('support')}>Support</div>
+        <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
       {activeSection === 'profile' && <ProfileComponent studentData={studentData} profileImage={profileImage} setProfileImage={setProfileImage} />}
         {activeSection === 'courses' && <CoursesComponent />}
         {activeSection === 'messages' && <MessagesComponent />}
         {activeSection === 'support' && <SupportComponent />}
-        {activeSection === 'announcements' && <AnnouncementsWidget />}
+        {activeSection === 'announcements' && <AnnouncementsWidget groupsData={groupsData} studentData={studentData}/>}
       </div>
     </div>
   );
