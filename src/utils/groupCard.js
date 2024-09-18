@@ -11,6 +11,28 @@ const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileU
   const [newFileUrl, setNewFileUrl] = useState(fileUrl); // Track new file URL
   const [uploading, setUploading] = useState(false); // Track uploading state
   const [messageVisible, setMessageVisible] = useState(false);
+
+  const [editableTitle, setEditableTitle] = useState(projectTitle);
+const [editableDescription, setEditableDescription] = useState(description);
+
+
+const handleSaveChanges = async () => {
+  const groupsRef = collection(firestore, 'groups');
+  const snapshot = await getDocs(groupsRef);
+  const groupDoc = snapshot.docs.find(doc => doc.data().groupname === groupName);
+
+
+  if (groupDoc) {
+    await updateDoc(groupDoc.ref, {
+      projectTitle: editableTitle,
+      description: editableDescription
+    });
+    setIsEditing(false); // Turn off editing mode after saving
+  }
+};
+
+
+
     const [message, setMessage] = useState('');
     const showMessage = () => {
       setMessage('This is an important message!');
@@ -59,9 +81,35 @@ const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileU
   return (
     <div style={styles.cardContainer}>
       <h2 style={styles.cardTitle}>{groupName}</h2>
-      <h4 style={styles.cardSubtitle}>Project Title:{projectTitle}</h4>
+
+      {!isEditing ? (
+        <>
+          <h4 style={styles.cardSubtitle}>Project Title: {editableTitle}</h4>
+          <p><strong>Description:</strong> {editableDescription}</p>
+        </>
+      ) : (
+        <>
+          <input 
+            type="text" 
+            value={editableTitle} 
+            onChange={(e) => setEditableTitle(e.target.value)} 
+            style={styles.input}
+            placeholder="Enter project title here..."
+          />
+          <textarea 
+            value={editableDescription} 
+            onChange={(e) => setEditableDescription(e.target.value)} 
+            style={styles.textarea}
+            placeholder="Enter project description here..."
+          />
+          {/* Save Changes button is added here within the editing block */}
+          <button onClick={handleSaveChanges} style={styles.saveButton}>
+            Save Changes
+          </button>
+        </>
+      )}
+      
       <p><strong>Students:</strong> {studentEmails.join(', ')}</p>
-      <p><strong>Description:</strong> {description}</p>
       <p><strong>Client:</strong> {client}</p>
       {isEditing && (
         <div style={styles.fileUploadContainer}>
@@ -85,12 +133,11 @@ const GroupCard = ({groupName, projectTitle, studentEmails=[], description,fileU
             {isEditing ? 'Cancel' : 'Edit'}
           </button>
         )}
-        {/* Show file upload option when editing is true */}
-      
-        
       </div>
     </div>
   );
+
+
 };
 
 const styles = {
@@ -134,6 +181,28 @@ const styles = {
     justifyContent: 'space-between',
     marginTop: '15px',
   },
+  input: {
+    padding: '10px',
+    margin: '10px 0',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  textarea: {
+    padding: '10px',
+    margin: '10px 0',
+    width: '100%',
+    height: '100px',
+    boxSizing: 'border-box',
+  },
+  saveButton: {
+    padding: '10px 20px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+  },
+
   viewButton: {
     padding: '10px 20px',
     fontSize: '14px',

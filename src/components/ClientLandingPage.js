@@ -192,7 +192,7 @@ const AnnouncementsWidget = () => (
 
 const ClientLandingPage = () => {
   const [activeSection, setActiveSection] = useState('announcements');
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState('');
   const [clientData, setClientData] = useState({}); // Changed from array to object
   const [loading, setLoading] = useState(true);
   const history = useHistory();

@@ -319,6 +319,7 @@ const TeacherLandingPage = () => {
 
             console.log("is the user in the group", isInGroup);
             console.log("this is the key", groupInfo.id);
+            console.log(groupInfo.fileDownloadUrl);
 
             return (
               isInGroup && (
@@ -333,6 +334,7 @@ const TeacherLandingPage = () => {
                   isCreator={isCreator}
                   chatId={groupInfo.chatId}
                 />
+                
               )
             );
           })}
