@@ -250,12 +250,13 @@ if (loading) {
 
       {/* Main Section */}
       <div style={styles.mainContent}>
-        {/* Create Group Button */}
+        {/* 
+        \Create Group Button */}
         <Link
           to="/create-group"
           style={{
             ...styles.createGroupButton,
-            backgroundColor: isHovered ? '#0077cc' : '#902bf5', // Change color based on hover state
+            backgroundColor: isHovered ? '#390270' : '#902bf5', // Change color based on hover state
           }}
           onMouseEnter={() => setIsHovered(true)} // Trigger hover
           onMouseLeave={() => setIsHovered(false)} // Remove hover
@@ -442,29 +443,38 @@ const styles = {
     fontWeight: 'bold',
   },
   generalDetails: {
+    position: 'absolute', // Use absolute to position it relative to the nearest positioned ancestor
+    top: '100px', // Adjust this value as needed
+    left: '45%', // Center horizontally
+    transform: 'translateX(-50%)',
+    width: '60%',
     backgroundColor: '#fff',
-    padding: '20px',
+    padding: '50px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
     borderRadius: '10px',
-    width: '60%',
-    marginTop: '10px', // Reduced margin to move it up
-    position: 'relative',
+    zIndex: 2, // Higher than the content below
   },
   messagesDetails: {
-    backgroundColor: '#fff',
-    padding: '20px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    borderRadius: '10px',
+    position: 'absolute', // Use absolute to position it relative to the nearest positioned ancestor
+    top: '345px', // Adjust this value as needed
+    left: '45%', // Center horizontally
+    transform: 'translateX(-50%)',
     width: '60%',
-    marginTop: '10px',
-    position: 'relative',
+    backgroundColor: '#fff',
+    padding: '50px',
+    boxShadow: '6px 4px 8px rgba(0.1, 0.1, 0.1, 0.1)',
+    borderRadius: '10px',
+    zIndex: 2, // Higher than the content below
   },
+
   messagesList: {
     listStyle: 'none',
     padding: 0,
     fontSize: '16px',
     lineHeight: '1.6',
   },
+
+  
   tabContainer: {
     display: 'flex',
     justifyContent: 'space-around',
@@ -497,13 +507,13 @@ const styles = {
     fontSize: '14px',
   },
   mainContent: {
+    position: 'relative', // Ensure this is relative for absolute positioning of children
     flex: 1,
-    padding: '20px',
+    padding: '30px',
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    position: 'relative',
     flexDirection: 'column',
+    alignItems: 'Center', // Center align items
+    overflow: 'hidden', // Ensures no overflow of content outside this container
   },
   createGroupButton: {
     position: 'absolute',
