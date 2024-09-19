@@ -342,94 +342,125 @@ const TeacherLandingPage = () => {
 
         {/* Display "General" Details if clicked */}
 
-        {isGeneralClicked && (
+      {isGeneralClicked && (
   <div style={styles.generalDetails}>
     {/* Toggle Edit/Save Button */}
-    <button style={styles.editButton} onClick={editMode?handleSaveChanges:toggleEditMode}>
+    <button 
+      style={{
+        ...styles.editButton, // Spread the existing CSS properties from editButton
+        backgroundColor: editMode ? "#7CFC00" : "#00aaff", // Conditionally change background color
+      }} 
+      onClick={editMode ? handleSaveChanges : toggleEditMode}
+    >
       {editMode ? "Save" : "Edit"}
     </button>
-    
-    <h3>General Information</h3>
-    <ul style={styles.generalList}>
+
+    <h3 style={styles.sectionHeader}>General Information</h3>
+    <div style={styles.infoContainer}>
       {teacherData && teacherData.length > 0 ? (
         teacherData.map((teacher, index) => (
-          <li key={teacher.uid || index}>
-            {/* Conditionally render input fields or plain text */}
-            <strong>Name:</strong> 
+          <div key={teacher.uid || index} style={styles.infoBlock}>
+            <label style={styles.label}><strong>Name:</strong></label>
             {editMode ? (
-              <input type="text" value={teacher.name} onChange={(e) => {
-                const newTeacherData = [...teacherData];
-                newTeacherData[index].name = e.target.value;
-                setTeacherData(newTeacherData);
-              }} />
+              <input 
+                type="text" 
+                value={teacher.name} 
+                onChange={(e) => {
+                  const newTeacherData = [...teacherData];
+                  newTeacherData[index].name = e.target.value;
+                  setTeacherData(newTeacherData);
+                }}
+                style={styles.input}
+              />
             ) : (
-              <span> {teacher.name || "N/A"}</span>
+              <span style={styles.value}> {teacher.name || "N/A"}</span>
             )}
             <br />
 
-            <strong>Age:</strong>
+            <label style={styles.label}><strong>Age:</strong></label>
             {editMode ? (
-              <input type="text" value={teacher.age} onChange={(e) => {
-                const newTeacherData = [...teacherData];
-                newTeacherData[index].age = e.target.value;
-                setTeacherData(newTeacherData);
-              }} />
+              <input 
+                type="text" 
+                value={teacher.age} 
+                onChange={(e) => {
+                  const newTeacherData = [...teacherData];
+                  newTeacherData[index].age = e.target.value;
+                  setTeacherData(newTeacherData);
+                }}
+                style={styles.input}
+              />
             ) : (
-              <span> {teacher.age || "N/A"}</span>
+              <span style={styles.value}> {teacher.age || "N/A"}</span>
             )}
             <br />
 
-            <strong>Email:</strong>
+            <label style={styles.label}><strong>Email:</strong></label>
             {editMode ? (
-              <input type="text" value={teacher.email} onChange={(e) => {
-                const newTeacherData = [...teacherData];
-                newTeacherData[index].email = e.target.value;
-                setTeacherData(newTeacherData);
-              }} />
+              <input 
+                type="text" 
+                value={teacher.email} 
+                onChange={(e) => {
+                  const newTeacherData = [...teacherData];
+                  newTeacherData[index].email = e.target.value;
+                  setTeacherData(newTeacherData);
+                }}
+                style={styles.input}
+              />
             ) : (
-              <span> {teacher.email || "N/A"}</span>
+              <span style={styles.value}> {teacher.email || "N/A"}</span>
             )}
             <br />
 
-            <strong>Department:</strong>
+            <label style={styles.label}><strong>Department:</strong></label>
             {editMode ? (
-              <input type="text" value={teacher.extraField} onChange={(e) => {
-                const newTeacherData = [...teacherData];
-                newTeacherData[index].extraField = e.target.value;
-                setTeacherData(newTeacherData);
-              }} />
+              <input 
+                type="text" 
+                value={teacher.extraField} 
+                onChange={(e) => {
+                  const newTeacherData = [...teacherData];
+                  newTeacherData[index].extraField = e.target.value;
+                  setTeacherData(newTeacherData);
+                }}
+                style={styles.input}
+              />
             ) : (
-              <span> {teacher.extraField || "N/A"}</span>
+              <span style={styles.value}> {teacher.extraField || "N/A"}</span>
             )}
             <br />
 
-            <strong>Contact:</strong>
+            <label style={styles.label}><strong>Contact:</strong></label>
             {editMode ? (
-              <input type="text" value={teacher.phone} onChange={(e) => {
-                const newTeacherData = [...teacherData];
-                newTeacherData[index].phone = e.target.value;
-                setTeacherData(newTeacherData);
-              }} />
+              <input 
+                type="text" 
+                value={teacher.phone} 
+                onChange={(e) => {
+                  const newTeacherData = [...teacherData];
+                  newTeacherData[index].phone = e.target.value;
+                  setTeacherData(newTeacherData);
+                }}
+                style={styles.input}
+              />
             ) : (
-              <span> {teacher.phone || "N/A"}</span>
+              <span style={styles.value}> {teacher.phone || "N/A"}</span>
             )}
             <br />
-          </li>
+          </div>
         ))
       ) : (
         <p>No teacher data available</p> // Show message if no data is available
       )}
-    </ul>
+    </div>
     {/* Hide upload field unless in edit mode */}
     {editMode && (
       <>
         <h4>Upload Profile Photo</h4>
-        <input type="file" onChange={handleImageUpload} />
+        <input type="file" onChange={handleImageUpload} style={styles.fileInput} />
         {uploading && <p>Uploading...</p>} {/* Show uploading progress */}
       </>
     )}
   </div>
 )}
+
 
         <button style={styles.editButton} onClick={handleLogout}>
           Log out
@@ -474,6 +505,40 @@ const styles = {
     flexDirection: "column",
     alignItems: "center", // Center align items in the sidebar
   },
+  sectionHeader: {
+    margin: '20px 0',
+    fontWeight: 'bold',
+    fontSize: '22px',
+  },
+
+  infoContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  infoBlock: {
+    marginBottom: '15px',
+  },
+  label: {
+    fontWeight: 'bold',
+    marginTop: '15px',
+    marginRight: '10px',
+    width: '100px',
+    display: 'inline-block',
+  },
+  input: {
+    margin: '6px',
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    width: '60%',
+  },
+  value: {
+    padding: '8px',
+  },
+  fileInput: {
+    marginTop: '10px',
+  },
+
   profilePhotoCentered: {
     width: "150px", // Set the square dimension
     height: "150px",
@@ -593,7 +658,7 @@ const styles = {
     top: "10px",
     right: "10px", // Move to top-right
     padding: "8px 12px",
-    backgroundColor: "#00aaff",
+    backgroundColor: "#D22B2B",
     color: "#fff",
     borderRadius: "5px",
     border: "none",
