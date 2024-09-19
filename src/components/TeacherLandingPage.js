@@ -275,12 +275,7 @@ const TeacherLandingPage = () => {
         </div>
 
         {/* Messages Section */}
-        <div
-          style={styles.messagesSection}
-          onClick={handleMessagesClick} // Clickable "Messages" section
-        >
-          <h3 style={styles.messagesTitle}>Messages</h3>
-        </div>
+        
       </div>
 
       {/* Main Section */}

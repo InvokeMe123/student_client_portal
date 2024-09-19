@@ -96,10 +96,10 @@ const ProfileComponent = ({ studentData, profileImage, setProfileImage, fetchStu
           </div>
           {editMode ? (
             <>
-              <p><strong>Email:</strong><input type="email" value={editedData.email || studentData.email} name="email" onChange={handleChange} /></p>
-              <p><strong>Contact:</strong><input type="text" value={editedData.phone || studentData.phone} name="phone" onChange={handleChange} /></p>
-              <p><strong>Age:</strong><input type="text" value={editedData.age || studentData.age} name="age" onChange={handleChange} /></p>
-              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || studentData.extraField} name="extraField" onChange={handleChange} /></p>
+              <p><strong>Email:</strong><input type="email" value={editedData.email || studentData.email} name="email" onChange={handleChange} style={styles.input} /></p>
+              <p><strong>Contact:</strong><input type="text" value={editedData.phone || studentData.phone} name="phone" onChange={handleChange} style={styles.input} /></p>
+              <p><strong>Age:</strong><input type="text" value={editedData.age || studentData.age} name="age" onChange={handleChange} style={styles.input} /></p>
+              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || studentData.extraField} name="extraField" onChange={handleChange} style={styles.input} /></p>
               <h4>Upload Profile Photo</h4>
               <input type="file" onChange={handleImageUpload} />
               <div>
@@ -130,12 +130,7 @@ const CoursesComponent = () => (
   </div>
 );
 
-const MessagesComponent = () => (
-  <div style={styles.fullContent}>
-    <h3>Messages</h3>
-    <p>Interactive chat system to communicate with teachers and students.</p>
-  </div>
-);
+
 
 const SupportComponent = () => (
   <div style={styles.fullContent}>
@@ -294,14 +289,14 @@ const StudentLandingPage = () => {
         <div style={styles.portalName}>Student Portal</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('profile')}>My Profile</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('courses')}>My Courses</div>
-        <div style={styles.menuItem} onClick={() => setActiveSection('messages')}>Messages</div>
+        
         <div style={styles.menuItem} onClick={() => setActiveSection('support')}>Support</div>
         <button style={styles.logoutButton} onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
         {activeSection === 'profile' && <ProfileComponent studentData={studentData} profileImage={profileImage} setProfileImage={setProfileImage} fetchStudentData={fetchStudentData} />}
         {activeSection === 'courses' && <CoursesComponent />}
-        {activeSection === 'messages' && <MessagesComponent />}
+        
         {activeSection === 'support' && <SupportComponent />}
         {activeSection === 'announcements' && <AnnouncementsWidget groupsData={groupsData} studentData={studentData} />}
       </div>
@@ -395,7 +390,7 @@ const styles = {
     fontSize: '30px',
   },
   saveChangesButton: {
-    width: '40%',
+    width: '20%',
     padding: '10px 5px',
     backgroundColor: '#26cc00', // Blue color for visibility
     color: 'white',
@@ -408,7 +403,7 @@ const styles = {
     
   },
   cancelButton: {
-    width: '40%',
+    width: '10%',
     padding: '10px 0',
     backgroundColor: 'grey', // Blue color for visibility
     color: 'white',
@@ -447,6 +442,7 @@ const styles = {
 
 
   profileDetails: {
+    width: '200%',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor:'',
@@ -461,6 +457,15 @@ const styles = {
     backgroundColor:'white'
     
   },
+  input: {
+    margin: '0px',
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    width: '60%',
+  },
+
+
 };
 
 export default StudentLandingPage;

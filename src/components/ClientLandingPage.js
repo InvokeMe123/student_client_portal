@@ -80,11 +80,7 @@ const handleChange = (event) => {
   return (
     <div style={styles.fullContent}>
       <div style={styles.profileHeader}>
-      {!editMode && (
-            <button style={styles.editButton} onClick={() => { setEditMode(true); setEditedData(clientData); }}>
-              Edit
-            </button>
-          )}
+      
       <div style={styles.headerDetails}>
         <img src={profileImage || '/public/images/image_2024-09-17_142924314-removebg-preview.png'} alt="Profile" style={styles.profileImage} />
         <div style={styles.nameAndButtonContainer}>
@@ -95,18 +91,18 @@ const handleChange = (event) => {
     </div>
     <div style={styles.profileDetails}>
         <div style={styles.profileSection}>
-          <h4>General Info</h4>
+          <h4 style={styles.sectionHeader}>General Info</h4>
           {editMode ? (
             <>
-              <p><strong>Email:</strong><input type="email" value={editedData.email || clientData.email} name="email" onChange={handleChange} /></p>
-              <p><strong>Contact:</strong><input type="text" value={editedData.phone || clientData.phone} name="phone" onChange={handleChange} /></p>
-              <p><strong>Age:</strong><input type="text" value={editedData.age || clientData.age} name="age" onChange={handleChange} /></p>
-              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || clientData.extraField} name="extraField" onChange={handleChange} /></p>
+              <p><strong>Email:</strong><input type="email" value={editedData.email || clientData.email} style={styles.input} name="email" onChange={handleChange} /></p>
+              <p><strong>Contact:</strong><input type="text" value={editedData.phone || clientData.phone} style={styles.input} name="phone" onChange={handleChange} /></p>
+              <p><strong>Age:</strong><input type="text" value={editedData.age || clientData.age} style={styles.input} name="age" onChange={handleChange} /></p>
+              <p><strong>Faculty:</strong><input type="text" value={editedData.extraField || clientData.extraField} style={styles.input}name="extraField" onChange={handleChange} /></p>
               <h4>Upload Profile Photo</h4>
               <input type="file" onChange={handleImageUpload} />
               <div>
-                <button onClick={handleSaveChanges}>Save Changes</button>
-                <button onClick={cancelEdit}>Cancel</button>
+                <button style={styles.saveChangesButton} onClick={handleSaveChanges}>Save Changes</button>
+                <button style={styles.cancelButton} onClick={cancelEdit}>Cancel</button>
               </div>
             </>
           ) : (
@@ -117,7 +113,13 @@ const handleChange = (event) => {
               <p><strong>Faculty:</strong> {clientData.extraField || 'N/A'}</p>
             </>
           )}
+          {!editMode && (
+            <button style={styles.editButton} onClick={() => { setEditMode(true); setEditedData(clientData); }}>
+              Edit
+            </button>
+          )}
         </div>
+        
       </div>
     </div>
   );
@@ -292,9 +294,9 @@ const ClientLandingPage = () => {
         <div style={styles.portalName}>Client Portal</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('profile')}>Profile</div>
         <div style={styles.menuItem} onClick={() => setActiveSection('projects')}>Projects</div>
-        <div style={styles.menuItem} onClick={() => setActiveSection('communications')}>Messages</div>
+        
         <div style={styles.menuItem} onClick={() => setActiveSection('support')}>Support</div>
-        <button style={styles.editButton}  onClick={handleLogout} >Log out</button>
+        <button style={styles.logOutButton}  onClick={handleLogout} >Log out</button>
       </div>
       <div style={styles.content}>
       {activeSection === 'profile' && <ProfileComponent clientData={clientData} profileImage={profileImage} setProfileImage={setProfileImage} fetchClientData={fetchClientData} />}
@@ -328,6 +330,34 @@ const styles = {
     height: '100vh',
     backgroundColor: '#f4f4f9',
   },
+  profileSection: {
+    padding:'10px',
+    
+    width: '60%',
+    
+  },
+
+
+  profileDetails:{
+    padding:'10px',
+    
+    width: '80%',
+  },
+
+  sectionHeader: {
+    margin: '20px 0',
+    fontWeight: 'bold',
+    fontSize: '22px',
+  },
+
+  input: {
+    margin: '0px',
+    padding: '8px',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    width: '60%',
+  },
+
   sidebar: {
     width: '255px',
     height: '100vh',
@@ -337,6 +367,19 @@ const styles = {
     alignItems: 'center',
     padding: '20px',
   },
+
+  logOutButton: {
+    width: '60%',
+    padding: '18px 0',
+    backgroundColor: '#b30000', // Dark red for visibility
+    color: 'white',
+    textAlign: 'center',
+    cursor: 'pointer',
+    marginBottom: '20px', // Ensures it's pushed to the bottom with space
+    borderRadius: '6px',
+  },
+
+
   home: {
     color: 'white',
     marginBottom: '20px',
@@ -350,6 +393,22 @@ const styles = {
     fontSize: '16px',
     textAlign: 'center',
   },
+
+  editButton: {
+    width: '10%',
+   
+    padding: '10px 0',
+    backgroundColor: '#19B5FE', // Blue color for visibility
+    color: 'white',
+    textAlign: 'center',
+    cursor: 'pointer',
+    marginBottom: '20px', // Ensures it's pushed to the bottom with space
+    borderRadius: '6px',
+    position: 'relative', // Changed from absolute if needed, adjust accordingly
+    left: '150px',
+  },
+
+
   menuItem: {
     backgroundColor: '#902bf5',
     color: 'white',
@@ -377,6 +436,35 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
+
+
+  saveChangesButton: {
+    
+    padding: '10px 5px',
+    backgroundColor: '#26cc00', // Blue color for visibility
+    color: 'white',
+    textAlign: 'center',
+    cursor: 'pointer',
+    marginTop: '10px',
+    marginBottom: '10px', // Ensures it's pushed to the bottom with space
+    borderRadius: '6px',
+    position: 'relative', // Changed from absolute if needed, adjust accordingly
+    
+  },
+  cancelButton: {
+    width: '10%',
+    padding: '10px 0',
+    backgroundColor: 'grey', // Blue color for visibility
+    color: 'white',
+    textAlign: 'center',
+    cursor: 'pointer',
+    marginTop: '10px',
+    marginLeft: '5px',
+    marginBottom: '10px', // Ensures it's pushed to the bottom with space
+    borderRadius: '6px',
+    position: 'relative', 
+  },
+
   fullContent: {
     width: '100%',
     padding: '40px 50px',
